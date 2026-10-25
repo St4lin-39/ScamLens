@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:scamlens/features/auth/domain/entities/user_entity.dart';
+import 'package:scamlens/features/auth/domain/entities/profile.dart';
 import 'package:scamlens/features/auth/domain/usescases/register_usecase.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -31,8 +31,10 @@ class RegisterErrorState extends RegisterState {
 }
 
 class RegisterSuccessState extends RegisterState {
-  final UserEntity user;
-  RegisterSuccessState({required this.user});
+  final Profile profile;
+  RegisterSuccessState({
+    required this.profile,
+  });
 }
 
 class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
@@ -48,13 +50,15 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   ) async {
     emit(RegisterLoadingState());
     try {
-      final user = await registerUseCase(
+      final profile = await registerUseCase(
         name: event.name,
         lastName: event.lastName,
         email: event.email,
         password: event.password,
       );
-      emit(RegisterSuccessState(user: user));
+      emit(RegisterSuccessState(
+        profile: profile,
+      ));
     } on AuthException catch (e) {
       emit(RegisterErrorState(errorMessage: e.message));
     } catch (e) {
