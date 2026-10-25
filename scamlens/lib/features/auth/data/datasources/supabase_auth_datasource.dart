@@ -1,4 +1,4 @@
-import 'package:scamlens/features/auth/data/models/user_model.dart';
+import 'package:scamlens/features/auth/domain/entities/auth_user.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseAuthDatasource {
@@ -6,16 +6,13 @@ class SupabaseAuthDatasource {
 
   SupabaseAuthDatasource({required this.client});
 
-  Future<UserModel> register({
-    required String name,
-    required String lastName,
+  Future<AuthUser> signUp({
     required String email,
     required String password,
   }) async {
     final AuthResponse response = await client.auth.signUp(
       email: email,
       password: password,
-      data: {'name': name, 'lastName': lastName},
     );
 
     final user = response.user;
@@ -23,10 +20,10 @@ class SupabaseAuthDatasource {
       throw Exception('User registration failed.');
     }
 
-    return UserModel.fromJson(user.toJson());
+    return AuthUser(id: user.id, email: user.email ?? email);
   }
 
-  Future<UserModel> login({
+  Future<AuthUser> signIn({
     required String email,
     required String password,
   }) async {
@@ -38,21 +35,7 @@ class SupabaseAuthDatasource {
     if (user == null) {
       throw Exception('Invalid credentials');
     }
-    return getCurrentProfile();
-  }
-
-  Future<UserModel> getCurrentProfile() async {
-    final currentUser = client.auth.currentUser;
-    if (currentUser == null) {
-      throw Exception('There isnt an active session');
-    }
-
-    final data = await client
-        .from('user')
-        .select()
-        .eq('id', currentUser.id)
-        .single();
-    return UserModel.fromJson(data);
+    return AuthUser(id: user.id, email: user.email ?? email);
   }
 
   Future<void> signOut() async {

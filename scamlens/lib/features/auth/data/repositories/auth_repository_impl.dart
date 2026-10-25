@@ -1,5 +1,5 @@
 import 'package:scamlens/features/auth/data/datasources/supabase_auth_datasource.dart';
-import 'package:scamlens/features/auth/domain/entities/user_entity.dart';
+import 'package:scamlens/features/auth/domain/entities/auth_user.dart';
 import 'package:scamlens/features/auth/domain/repositories/auth_repository.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
@@ -7,28 +7,19 @@ class AuthRepositoryImpl implements AuthRepository {
 
   AuthRepositoryImpl(this.datasource);
   @override
-  Future<UserEntity> register({
-    required String name,
-    required String lastName,
+  Future<AuthUser> signUp({
     required String email,
     required String password,
   }) {
-    return datasource.register(
-      name: name,
-      lastName: lastName,
+    return datasource.signUp(
       email: email,
       password: password,
     );
   }
 
   @override
-  Future<UserEntity> login({required String email, required String password}) {
-    return datasource.login(email: email, password: password);
-  }
-
-  @override
-  Future<UserEntity> getCurrentProfile() {
-    return datasource.getCurrentProfile();
+  Future<AuthUser> signIn({required String email, required String password}) {
+    return datasource.signIn(email: email, password: password);
   }
 
   @override
