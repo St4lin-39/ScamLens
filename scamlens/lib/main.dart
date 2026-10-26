@@ -12,21 +12,15 @@ import 'package:scamlens/features/register/ui/bloc/register_bloc.dart';
 import 'package:scamlens/theme/app_theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-const supabaseUrl = String.fromEnvironment('SUPABASE_URL');
-const supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
+const supabaseUrl = 'https://whktztxzdruccvukxcuv.supabase.co';
+const supabasePublishableKey = 'sb_publishable_rF5IjGKLYSvOH080Ybenbg_UiuKa5i3';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  if (supabaseUrl.isEmpty || supabaseAnonKey.isEmpty) {
-    throw Exception(
-      'Debe proporcionar SUPABASE_URL y SUPABASE_ANON_KEY mediante --dart-define.',
-    );
-  }
-
   await Supabase.initialize(
     url: supabaseUrl,
-    anonKey: supabaseAnonKey,
+    publishableKey: supabasePublishableKey,
   );
 
   final supabaseClient = Supabase.instance.client;
@@ -44,10 +38,7 @@ Future<void> main() async {
     profileRepository: profileRepository,
   );
 
-  runApp(MyApp(
-    loginUseCase: loginUseCase,
-    registerUseCase: registerUseCase,
-  ));
+  runApp(MyApp(loginUseCase: loginUseCase, registerUseCase: registerUseCase));
 }
 
 class MyApp extends StatelessWidget {
