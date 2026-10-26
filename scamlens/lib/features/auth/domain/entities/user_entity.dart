@@ -1,11 +1,8 @@
 /// Representa la identidad autenticada y contiene únicamente la información
 /// de autenticación necesaria para la capa de dominio.
-class AuthUser {
+class UserEntity {
   final String id;
   final String email;
 
-  const AuthUser({
-    required this.id,
-    required this.email,
-  });
+  const UserEntity({required this.id, required this.email});
 }

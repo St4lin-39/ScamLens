@@ -1,12 +1,12 @@
-import 'package:scamlens/features/auth/domain/entities/auth_user.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' hide AuthUser;
+import 'package:scamlens/features/auth/domain/entities/user_entity.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseAuthDatasource {
   final SupabaseClient client;
 
   SupabaseAuthDatasource({required this.client});
 
-  Future<AuthUser> signUp({
+  Future<UserEntity> signUp({
     required String email,
     required String password,
   }) async {
@@ -20,10 +20,10 @@ class SupabaseAuthDatasource {
       throw Exception('User registration failed.');
     }
 
-    return AuthUser(id: user.id, email: user.email ?? email);
+    return UserEntity(id: user.id, email: user.email ?? email);
   }
 
-  Future<AuthUser> signIn({
+  Future<UserEntity> signIn({
     required String email,
     required String password,
   }) async {
@@ -35,7 +35,7 @@ class SupabaseAuthDatasource {
     if (user == null) {
       throw Exception('Invalid credentials');
     }
-    return AuthUser(id: user.id, email: user.email ?? email);
+    return UserEntity(id: user.id, email: user.email ?? email);
   }
 
   Future<void> signOut() async {

@@ -1,13 +1,7 @@
-import 'package:scamlens/features/auth/domain/entities/auth_user.dart';
+import 'package:scamlens/features/auth/domain/entities/user_entity.dart';
 
 abstract class AuthRepository {
-  Future<AuthUser> signUp({
-    required String email,
-    required String password,
-  });
-  Future<AuthUser> signIn({
-    required String email,
-    required String password,
-  });
+  Future<UserEntity> signUp({required String email, required String password});
+  Future<UserEntity> signIn({required String email, required String password});
   Future<void> signOut();
 }

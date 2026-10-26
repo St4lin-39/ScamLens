@@ -20,11 +20,7 @@ class SupabaseProfileDatasource {
   }
 
   Future<ProfileModel> getProfile(String id) async {
-    final data = await client
-        .from('user')
-        .select()
-        .eq('id', id)
-        .single();
+    final data = await client.from('user').select().eq('id', id).single();
     return ProfileModel.fromJson(data);
   }
 }

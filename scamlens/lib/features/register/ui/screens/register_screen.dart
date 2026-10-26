@@ -49,7 +49,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
     if (password != _confirmPasswordController.text) {
-      setState(() => _localError = 'The passwords dont match');
+      setState(() => _localError = "The passwords doesn't match");
       return;
     }
     setState(() => _localError = null);
@@ -66,7 +66,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Onboarding y Registro')),
+      appBar: AppBar(title: const Text('Onboarding and Register')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -96,7 +96,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const ScamLensHeader(showProtectedBadge: false),
                     const SizedBox(height: 24),
                     const Text(
-                      'Activa tu escudo digital',
+                      'Enable your digital shield',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
