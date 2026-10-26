@@ -5,6 +5,7 @@ import 'package:scamlens/components/primary_button.dart';
 import 'package:scamlens/components/scamlens_header.dart';
 import 'package:scamlens/features/home/ui/home_screen.dart';
 import 'package:scamlens/features/login/ui/bloc/login_bloc.dart';
+import 'package:scamlens/features/register/ui/screens/register_screen.dart';
 import 'package:scamlens/theme/app_theme.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -121,6 +122,33 @@ class _LoginScreenState extends State<LoginScreen> {
                       label: 'Iniciar sesión',
                       isLoading: isLoading,
                       onPressed: _submit,
+                    ),
+                    const SizedBox(height: 12),
+                    Center(
+                      child: TextButton(
+                        onPressed: isLoading
+                            ? null
+                            : () {
+                                if (context.read<LoginBloc>().state.status ==
+                                    LoginStatus.loading) {
+                                  return;
+                                }
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const RegisterScreen(),
+                                  ),
+                                );
+                              },
+                        child: Text(
+                          '¿No tienes cuenta? Regístrate',
+                          style: TextStyle(
+                            color: isLoading
+                                ? AppColors.textSecondary
+                                : AppColors.accentCyan,
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 );
