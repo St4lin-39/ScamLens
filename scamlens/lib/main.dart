@@ -6,6 +6,7 @@ import 'package:scamlens/features/auth/data/repositories/auth_repository_impl.da
 import 'package:scamlens/features/auth/data/repositories/profile_repository_impl.dart';
 import 'package:scamlens/features/auth/domain/usescases/login_usecase.dart';
 import 'package:scamlens/features/auth/domain/usescases/register_usecase.dart';
+import 'package:scamlens/features/auth/domain/usescases/sign_out_usecase.dart';
 import 'package:scamlens/features/login/ui/bloc/login_bloc.dart';
 import 'package:scamlens/features/login/ui/screens/login_screen.dart';
 import 'package:scamlens/features/register/ui/bloc/register_bloc.dart';
@@ -37,36 +38,48 @@ Future<void> main() async {
     authRepository: authRepository,
     profileRepository: profileRepository,
   );
+  final signOutUseCase = SignOutUseCase(authRepository);
 
-  runApp(MyApp(loginUseCase: loginUseCase, registerUseCase: registerUseCase));
+  runApp(
+    MyApp(
+      loginUseCase: loginUseCase,
+      registerUseCase: registerUseCase,
+      signOutUseCase: signOutUseCase,
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
   final LoginUseCase loginUseCase;
   final RegisterUseCase registerUseCase;
+  final SignOutUseCase signOutUseCase;
 
   const MyApp({
     super.key,
     required this.loginUseCase,
     required this.registerUseCase,
+    required this.signOutUseCase,
   });
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider<LoginBloc>(
-          create: (_) => LoginBloc(loginUseCase: loginUseCase),
+    return RepositoryProvider<SignOutUseCase>.value(
+      value: signOutUseCase,
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider<LoginBloc>(
+            create: (_) => LoginBloc(loginUseCase: loginUseCase),
+          ),
+          BlocProvider<RegisterBloc>(
+            create: (_) => RegisterBloc(registerUseCase: registerUseCase),
+          ),
+        ],
+        child: MaterialApp(
+          title: 'ScamLens',
+          debugShowCheckedModeBanner: false,
+          theme: buildTheme(),
+          home: const LoginScreen(),
         ),
-        BlocProvider<RegisterBloc>(
-          create: (_) => RegisterBloc(registerUseCase: registerUseCase),
-        ),
-      ],
-      child: MaterialApp(
-        title: 'ScamLens',
-        debugShowCheckedModeBanner: false,
-        theme: buildTheme(),
-        home: const LoginScreen(),
       ),
     );
   }

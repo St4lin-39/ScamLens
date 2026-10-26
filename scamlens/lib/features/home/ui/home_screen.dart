@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:scamlens/components/profile_field.dart';
 import 'package:scamlens/components/scamlens_header.dart';
 import 'package:scamlens/features/auth/domain/entities/profile.dart';
+import 'package:scamlens/features/auth/domain/usescases/sign_out_usecase.dart';
+import 'package:scamlens/features/login/ui/screens/login_screen.dart';
 import 'package:scamlens/theme/app_theme.dart';
 
 class HomeScreen extends StatelessWidget {
   final Profile profile;
 
-  const HomeScreen({
-    super.key,
-    required this.profile,
-  });
+  const HomeScreen({super.key, required this.profile});
 
   @override
   Widget build(BuildContext context) {
@@ -34,10 +34,7 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 6),
               const Text(
                 'Estos son los datos asociados a tu cuenta de ScamLens.',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  height: 1.4,
-                ),
+                style: TextStyle(color: AppColors.textSecondary, height: 1.4),
               ),
               const SizedBox(height: 24),
               ProfileField(
@@ -56,6 +53,22 @@ class HomeScreen extends StatelessWidget {
                 icon: Icons.mail_outline,
                 label: 'Correo electrónico',
                 value: profile.email,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: () async {
+                  await context.read<SignOutUseCase>()();
+
+                  if (!context.mounted) return;
+
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (_) => const LoginScreen()),
+                    (route) => false,
+                  );
+                },
+                icon: const Icon(Icons.logout),
+                label: const Text('Cerrar sesión'),
               ),
             ],
           ),
