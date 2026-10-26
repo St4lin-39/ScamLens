@@ -48,7 +48,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
     if (password != _confirmPasswordController.text) {
-      setState(() => _localError = 'The passwords dont match');
+      setState(() => _localError = "The passwords doesn't match");
       return;
     }
     setState(() => _localError = null);
