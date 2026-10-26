@@ -4,6 +4,7 @@ import 'package:scamlens/features/auth/data/datasources/supabase_auth_datasource
 import 'package:scamlens/features/auth/data/datasources/supabase_profile_datasource.dart';
 import 'package:scamlens/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:scamlens/features/auth/data/repositories/profile_repository_impl.dart';
+import 'package:scamlens/features/auth/domain/usescases/get_profile_usecase.dart';
 import 'package:scamlens/features/auth/domain/usescases/login_usecase.dart';
 import 'package:scamlens/features/auth/domain/usescases/register_usecase.dart';
 import 'package:scamlens/features/auth/domain/usescases/sign_out_usecase.dart';
@@ -29,21 +30,23 @@ Future<void> main() async {
   final profileDatasource = SupabaseProfileDatasource(client: supabaseClient);
   final authRepository = AuthRepositoryImpl(authDatasource);
   final profileRepository = ProfileRepositoryImpl(profileDatasource);
+
   final loginUseCase = LoginUseCase(
     authRepository: authRepository,
     profileRepository: profileRepository,
   );
-
   final registerUseCase = RegisterUseCase(
     authRepository: authRepository,
     profileRepository: profileRepository,
   );
+  final getProfileUseCase = GetProfileUseCase(profileRepository);
   final signOutUseCase = SignOutUseCase(authRepository);
 
   runApp(
     MyApp(
       loginUseCase: loginUseCase,
       registerUseCase: registerUseCase,
+      getProfileUseCase: getProfileUseCase,
       signOutUseCase: signOutUseCase,
     ),
   );
@@ -52,19 +55,24 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   final LoginUseCase loginUseCase;
   final RegisterUseCase registerUseCase;
+  final GetProfileUseCase getProfileUseCase;
   final SignOutUseCase signOutUseCase;
 
   const MyApp({
     super.key,
     required this.loginUseCase,
     required this.registerUseCase,
+    required this.getProfileUseCase,
     required this.signOutUseCase,
   });
 
   @override
   Widget build(BuildContext context) {
-    return RepositoryProvider<SignOutUseCase>.value(
-      value: signOutUseCase,
+    return MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider<GetProfileUseCase>.value(value: getProfileUseCase),
+        RepositoryProvider<SignOutUseCase>.value(value: signOutUseCase),
+      ],
       child: MultiBlocProvider(
         providers: [
           BlocProvider<LoginBloc>(
