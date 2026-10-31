@@ -1,5 +1,62 @@
-# ScamLens 
+# ScamLens
+
 > Aplicación móvil de ciberseguridad preventiva contra ataques de Phishing, Smishing y QRishing.
+
+---
+
+## Guía rápida de navegación — Sprint 1
+
+Este Sprint implementa el flujo inicial de autenticación y perfil de usuario de ScamLens. Para probarlo, la aplicación puede recorrerse de la siguiente manera:
+
+```text
+Inicio de la aplicación
+        │
+        ▼
+Inicio de Sesión
+        │
+        ├── ¿No tienes una cuenta?
+        │           │
+        │           ▼
+        │       Registro
+        │           │
+        │           ▼
+        │    Resumen del Perfil
+        │
+        └── Usuario registrado
+                    │
+                    ▼
+             Iniciar Sesión
+                    │
+                    ▼
+            Resumen del Perfil
+                    │
+                    ▼
+              Cerrar Sesión
+                    │
+                    ▼
+             Inicio de Sesión
+```
+
+### Flujo recomendado para probar la aplicación
+
+1. Al iniciar ScamLens se mostrará la pantalla de **Inicio de Sesión**.
+2. Si aún no se tiene una cuenta, seleccionar la opción para **registrarse**.
+3. Completar el formulario con:
+   - Nombre.
+   - Apellido.
+   - Correo electrónico.
+   - Contraseña.
+   - Confirmación de contraseña.
+4. Crear la cuenta.
+5. Al finalizar correctamente el registro, la aplicación dirigirá automáticamente al **Resumen del Perfil**.
+6. Verificar que la información mostrada corresponda al usuario registrado.
+7. Seleccionar **Cerrar sesión** para regresar a la pantalla de Inicio de Sesión.
+8. Ingresar nuevamente utilizando el **correo electrónico y contraseña** registrados.
+9. Al autenticarse correctamente, la aplicación recuperará el perfil y mostrará nuevamente el **Resumen del Perfil**.
+
+De esta manera puede comprobarse el flujo completo desarrollado durante el Sprint 1:
+
+**Registro → Perfil → Cerrar sesión → Inicio de sesión → Perfil**
 
 ---
 
@@ -20,142 +77,254 @@ En este primer sprint se implementó el flujo base de identidad y acceso de la a
 
 1. **Onboarding Mínimo y Registro de Usuario:**
    - Captura de datos iniciales del usuario (Nombre, Apellido, Correo electrónico y Contraseña con confirmación).
-   - Creación de credenciales cifradas a través de **Supabase Auth** (`auth.users`).
-   - Persistencia sincronizada en la tabla `public.user` en PostgreSQL mediante el repositorio de perfiles.
+   - Creación de credenciales mediante **Supabase Auth** (`auth.users`).
+   - Persistencia sincronizada del perfil en la tabla `public.user` en PostgreSQL mediante el repositorio de perfiles.
 
 2. **Inicio de Sesión (Login):**
-   - Validación segura de credenciales mediante correo y contraseña.
+   - Validación de credenciales mediante correo electrónico y contraseña.
    - Manejo de estados de carga (`loading`), éxito (`success`) y fallo (`failure`) con mensajes de error visuales.
+   - Recuperación del perfil asociado al usuario autenticado.
 
 3. **Pantalla de Resumen del Perfil (Home / Profile Summary):**
-   - Presentación de los datos del usuario autenticado (Nombre completo, correo, fecha de vinculación y estado del escudo activo).
-   - Avatar dinámico generado a partir de la inicial del usuario con la paleta de identidad visual de ScamLens.
-   - Cierre de sesión seguro (`SignOutUseCase`) que destruye la sesión y redirige a la pantalla de acceso.
+   - Presentación de los datos asociados al usuario autenticado.
+   - Visualización de la información del perfil dentro de la interfaz de ScamLens.
+   - Cierre de sesión seguro (`SignOutUseCase`) y redirección a la pantalla de acceso.
 
 ---
 
 ## Arquitectura del Software
 
-El proyecto implementa **Clean Architecture** estructurada por capas y características (*feature-based*), garantizando desacoplamiento, mantenibilidad y escalabilidad para los próximos sprints:
+El proyecto implementa **Clean Architecture** estructurada por capas y características (*feature-based*), buscando mantener separadas las reglas de negocio, el acceso a datos y la interfaz de usuario.
 
 ```text
 lib/
 ├── components/                  # Widgets visuales reutilizables
-│   ├── error_message.dart       # Banner de notificación de errores
-│   ├── primary_button.dart      # Botón con degradado cian/menta y spinner
-│   ├── profile_field.dart       # Tarjeta de lectura de atributos de perfil
-│   └── scamlens_header.dart     # Cabecera con isotipo y estado del escudo
+│   ├── error_message.dart       # Presentación de mensajes de error
+│   ├── primary_button.dart      # Botón principal reutilizable
+│   ├── profile_field.dart       # Presentación de atributos del perfil
+│   └── scamlens_header.dart     # Cabecera visual de ScamLens
+│
 ├── features/
-│   ├── auth/                    # Capa central de autenticación y perfil
-│   │   ├── domain/              # Reglas de negocio puras (independientes del framework)
+│   ├── auth/                    # Autenticación y perfil
+│   │   ├── domain/              # Reglas de negocio independientes
 │   │   │   ├── entities/        # Entidades del dominio (AuthUser, Profile)
-│   │   │   ├── repositories/    # Interfaces / Contratos de repositorios
+│   │   │   ├── repositories/    # Contratos de repositorios
 │   │   │   └── usescases/       # Casos de uso (Login, Register, SignOut)
-│   │   └── data/                # Implementación técnica y acceso a datos
-│   │       ├── datasources/     # Comunicación con Supabase Client
-│   │       ├── models/          # Modelos de serialización JSON (ProfileModel)
-│   │       └── repositories/    # Implementación concreta de los repositorios
+│   │   │
+│   │   └── data/                # Implementación técnica
+│   │       ├── datasources/     # Comunicación con Supabase
+│   │       ├── models/          # Transformación de datos
+│   │       └── repositories/    # Implementaciones de repositorios
+│   │
 │   ├── login/                   # Módulo de Inicio de Sesión
 │   │   └── ui/
-│   │       ├── bloc/            # LoginBloc (Eventos, Estados, Lógica)
-│   │       └── screens/         # LoginScreen (Formulario y validación)
+│   │       ├── bloc/            # Estado y eventos del Login
+│   │       └── screens/         # Interfaz de Inicio de Sesión
+│   │
 │   ├── register/                # Módulo de Registro
 │   │   └── ui/
-│   │       ├── bloc/            # RegisterBloc (Eventos, Estados, Lógica)
-│   │       └── screens/         # RegisterScreen (Formulario de alta)
-│   ├── home/                    # Módulo de Resumen del Usuario
-│   │   └── ui/
-│   │       ├── bloc/            # ProfileBloc (Carga, Pull-to-refresh y Logout)
-│   │       └── home_screen.dart # Pantalla de resumen del perfil y logout
+│   │       ├── bloc/            # Estado y eventos del Registro
+│   │       └── screens/         # Interfaz de Registro
+│   │
+│   └── home/                    # Resumen del Perfil
+│       └── ui/
+│           ├── bloc/            # Gestión del estado del perfil
+│           └── home_screen.dart # Pantalla principal del usuario
+│
 ├── theme/
-│   └── app_theme.dart           # Paleta de colores dark mode y tipografía
-└── main.dart                    # Inicialización de Supabase y árbol raíz
+│   └── app_theme.dart           # Paleta de colores y estilos
+│
+└── main.dart                    # Inicialización y composición de dependencias
 ```
 
 ### Gestión de Estado (BLoC Pattern)
-Se utilizó la librería oficial `flutter_bloc`:
-- **`LoginBloc`:** Escucha el evento `LoginSubmitted`, emite el estado `LoginStatus.loading`, consume `LoginUseCase` y transiciona a `LoginStatus.success` o `LoginStatus.failure`.
-- **`RegisterBloc`:** Escucha `OnRegisterSubmittedEvent`, valida contraseñas, consume `RegisterUseCase` y emite `RegisterSuccessState` con el perfil creado.
-- **`ProfileBloc`:** Gestiona el ciclo de vida de la pantalla de resumen, permitiendo inicialización inmediata, recarga manual de datos con `LoadProfileEvent` (*Pull-to-Refresh*), y cierre de sesión con `SignOutRequestedEvent`.
-- **Inyección de Dependencias:** Gestión mediante `MultiRepositoryProvider` y `MultiBlocProvider` en el punto de entrada de la aplicación.
+
+Se utilizó la librería `flutter_bloc` para separar la lógica de presentación de las interfaces:
+
+- **`LoginBloc`:** Gestiona el envío de credenciales, los estados de carga, éxito y error durante el inicio de sesión.
+- **`RegisterBloc`:** Gestiona el formulario de registro y la creación del usuario y su perfil.
+- **`ProfileBloc`:** Gestiona el estado relacionado con la pantalla de perfil.
+- **Inyección de dependencias:** Los repositorios, casos de uso y BLoCs son construidos e inyectados desde el punto de entrada de la aplicación.
+
+### Flujo de autenticación
+
+El inicio de sesión mantiene separada la autenticación del perfil de la aplicación:
+
+```text
+LoginScreen
+     │
+     ▼
+LoginBloc
+     │
+     ▼
+LoginUseCase
+     │
+     ├── AuthRepository.signIn()
+     │          │
+     │          ▼
+     │       AuthUser
+     │
+     └── ProfileRepository.getProfile(id)
+                │
+                ▼
+             Profile
+                │
+                ▼
+            HomeScreen
+```
+
+Durante el registro, primero se crea la identidad de autenticación y posteriormente el perfil asociado:
+
+```text
+RegisterScreen
+      │
+      ▼
+RegisterBloc
+      │
+      ▼
+RegisterUseCase
+      │
+      ├── AuthRepository.signUp()
+      │          │
+      │          ▼
+      │       AuthUser
+      │
+      └── ProfileRepository.createProfile()
+                 │
+                 ▼
+              Profile
+                 │
+                 ▼
+             HomeScreen
+```
 
 ---
 
 ## Modelo de Base de Datos (Supabase / PostgreSQL)
 
-Las tablas correspondientes a este sprint se encuentran versionadas bajo la carpeta `supabase/migrations/`:
+Las estructuras correspondientes al Sprint 1 se encuentran versionadas bajo la carpeta `supabase/migrations/`.
 
-### 1. Tabla `public.user` (Perfil)
-Almacena la identidad de los usuarios registrados, vinculada por clave foránea a `auth.users`:
-- `id` (UUID, Primary Key, referencias a `auth.users(id) ON DELETE CASCADE`)
-- `name` (VARCHAR(255), NOT NULL)
-- `last_name` (VARCHAR(255), NOT NULL)
-- `email` (VARCHAR(255), UNIQUE, NOT NULL)
-- `active` (BOOLEAN, DEFAULT TRUE)
-- `created_in` (TIMESTAMP WITH TIME ZONE, NOT NULL)
+### 1. Tabla `public.user` — Perfil
 
-### 2. Tabla `public.device` (Dispositivos)
-Registra los dispositivos móviles vinculados al usuario:
-- `id` (UUID, Primary Key, `gen_random_uuid()`)
-- `user_id` (UUID, FK a `public.user(id)`, nulable para soportar modo invitado)
-- `uuid_device` (VARCHAR(255), UNIQUE, NOT NULL)
-- `model_device` (VARCHAR(255), NOT NULL)
-- `operating_system` (VARCHAR(255), NOT NULL)
-- `version_os` (VARCHAR(255), NOT NULL)
-- `token_push` (TEXT, nulable)
-- `last_access` (TIMESTAMP WITH TIME ZONE, NOT NULL)
+Almacena los datos del perfil de los usuarios registrados y se encuentra vinculada con `auth.users`.
 
-### 3. Seguridad a nivel de filas (Row Level Security - RLS)
-- Políticas activas en `user` para que cada usuario autenticado solo pueda consultar (`SELECT`) y actualizar (`UPDATE`) su propio registro (`auth.uid() = id`).
-- Políticas en `device` para limitar la gestión de dispositivos al propietario de la sesión.
+- `id` — UUID, Primary Key y referencia a `auth.users(id)`.
+- `name` — VARCHAR(255), NOT NULL.
+- `last_name` — VARCHAR(255), NOT NULL.
+- `email` — VARCHAR(255), UNIQUE, NOT NULL.
+- `active` — BOOLEAN, DEFAULT TRUE.
+- `created_in` — TIMESTAMP WITH TIME ZONE, NOT NULL.
+
+### 2. Tabla `public.device` — Dispositivos
+
+Estructura destinada al registro de dispositivos vinculados a los usuarios:
+
+- `id` — UUID, Primary Key.
+- `user_id` — UUID, referencia a `public.user(id)`.
+- `uuid_device` — VARCHAR(255), UNIQUE, NOT NULL.
+- `model_device` — VARCHAR(255), NOT NULL.
+- `operating_system` — VARCHAR(255), NOT NULL.
+- `version_os` — VARCHAR(255), NOT NULL.
+- `token_push` — TEXT.
+- `last_access` — TIMESTAMP WITH TIME ZONE, NOT NULL.
+
+### 3. Seguridad a nivel de filas (Row Level Security — RLS)
+
+La base de datos utiliza políticas **Row Level Security (RLS)** para restringir el acceso a la información de acuerdo con el usuario autenticado.
+
+En `public.user`, las políticas permiten que cada usuario trabaje únicamente con el perfil asociado a su propia identidad de autenticación utilizando `auth.uid()`.
 
 ---
 
 ## Requisitos y Ejecución Local
 
 ### Prerrequisitos
-- [Flutter SDK](https://docs.flutter.dev/get-started/install) (versión 3.13 o superior)
-- Dart SDK
-- Navegador Google Chrome, Firefox, emulador Android o dispositivo físico.
 
-### Pasos para ejecutar:
+- Flutter SDK.
+- Dart SDK.
+- Google Chrome para ejecución web, o un dispositivo/emulador Android correctamente configurado.
+- Git para clonar el repositorio.
+
+### Pasos para ejecutar
 
 1. **Clonar el repositorio:**
-   ```bash
-   git clone <url-del-repositorio>
-   cd scamlens
-   ```
 
-2. **Instalar dependencias de Flutter:**
-   ```bash
-   flutter pub get
-   ```
+```bash
+git clone <url-del-repositorio>
+```
 
-3. **Verificar que no existan errores estáticos:**
-   ```bash
-   flutter analyze
-   ```
+2. **Ingresar al proyecto Flutter:**
 
-4. **Ejecutar la aplicación:**
-   - **En Navegador Web (servidor local):**
-     ```bash
-     flutter run -d web-server --web-port 8080
-     ```
-     (Abrir `http://localhost:8080` en cualquier navegador).
-   - **En Google Chrome:**
-     ```bash
-     flutter run -d chrome
-     ```
-   - **En Celular / Emulador Android:**
-     ```bash
-     flutter run -d <device_id>
-     ```
+```bash
+cd ScamLens/scamlens
+```
+
+3. **Instalar las dependencias:**
+
+```bash
+flutter pub get
+```
+
+4. **Verificar el proyecto:**
+
+```bash
+flutter analyze
+```
+
+5. **Consultar los dispositivos disponibles:**
+
+```bash
+flutter devices
+```
+
+6. **Ejecutar en Google Chrome:**
+
+```bash
+flutter run -d chrome
+```
+
+7. **O ejecutar en un dispositivo/emulador Android:**
+
+```bash
+flutter run -d <device_id>
+```
+
+Una vez iniciada la aplicación, seguir la **Guía rápida de navegación — Sprint 1** ubicada al comienzo de este documento.
 
 ---
 
 ## Identidad Visual
-El diseño sigue la guía de estilos establecida para ScamLens:
-- **Background principal:** Azul nocturno de ciberseguridad (`#080D1A`).
-- **Superficie de tarjetas:** Azul marino profundo (`#111827`) con bordes en `#1E293B`.
-- **Acentos:** Degradado cian (`#00D2FF`) a verde menta (`#00E5A3`).
-- **Semáforo de riesgo:** Verde protegido (`#10B981`), Amarillo advertencia (`#F59E0B`) y Rojo peligro (`#EF4444`).
+
+El diseño de ScamLens utiliza una interfaz oscura orientada a la temática de ciberseguridad:
+
+- **Background principal:** Azul nocturno (`#080D1A`).
+- **Superficie de tarjetas:** Azul marino profundo (`#111827`).
+- **Bordes:** `#1E293B`.
+- **Acentos:** Cian (`#00D2FF`) y verde menta (`#00E5A3`).
+- **Estados de riesgo:** Verde (`#10B981`), amarillo (`#F59E0B`) y rojo (`#EF4444`).
+
+---
+
+## Sprint 1
+
+El Sprint 1 establece el flujo inicial de identidad de ScamLens, permitiendo:
+
+- Crear una cuenta.
+- Almacenar el perfil asociado.
+- Iniciar sesión con credenciales existentes.
+- Recuperar y visualizar la información del perfil.
+- Cerrar la sesión activa.
+
+El flujo funcional entregado es:
+
+```text
+Registro
+   ↓
+Perfil
+   ↓
+Cerrar sesión
+   ↓
+Inicio de sesión
+   ↓
+Perfil
+```
