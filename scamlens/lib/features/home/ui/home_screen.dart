@@ -9,6 +9,8 @@ import 'package:scamlens/features/auth/domain/usescases/get_profile_usecase.dart
 import 'package:scamlens/features/auth/domain/usescases/sign_out_usecase.dart';
 import 'package:scamlens/features/home/ui/bloc/profile_bloc.dart';
 import 'package:scamlens/features/login/ui/screens/login_screen.dart';
+import 'package:scamlens/features/scanner/ui/bloc/scanner_bloc.dart';
+import 'package:scamlens/features/scanner/ui/screens/scanner_screen.dart';
 import 'package:scamlens/theme/app_theme.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -205,6 +207,20 @@ class _HomeScreenView extends StatelessWidget {
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.textSecondary,
         currentIndex: 2,
+        onTap: (index) {
+          if (index == 0) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => BlocProvider(
+                  create: (_) =>
+                      ScannerBloc()..add(CheckCameraPermissionEvent()),
+                  child: const ScannerScreen(),
+                ),
+              ),
+            );
+          }
+        },
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.qr_code_scanner_rounded),
