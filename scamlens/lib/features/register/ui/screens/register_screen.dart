@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:scamlens/components/error_message.dart';
 import 'package:scamlens/components/primary_button.dart';
 import 'package:scamlens/components/scamlens_header.dart';
-import 'package:scamlens/features/home/ui/home_screen.dart';
+import 'package:scamlens/features/login/ui/screens/login_screen.dart';
 import 'package:scamlens/features/register/ui/bloc/register_bloc.dart';
 import 'package:scamlens/theme/app_theme.dart';
 
@@ -73,13 +73,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: BlocListener<RegisterBloc, RegisterState>(
             listener: (context, state) {
               if (state is RegisterSuccessState) {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => HomeScreen(profile: state.profile),
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Row(
+                      children: [
+                        Icon(Icons.check_circle, color: Colors.white),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            '¡Cuenta creada con éxito! Inicia sesión para continuar.',
+                          ),
+                        ),
+                      ],
+                    ),
+                    backgroundColor: AppColors.safeGreen,
+                    duration: Duration(seconds: 4),
                   ),
-                  (route) => false,
                 );
+
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
+                } else {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  );
+                }
               }
             },
             child: BlocBuilder<RegisterBloc, RegisterState>(
