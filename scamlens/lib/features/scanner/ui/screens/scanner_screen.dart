@@ -21,7 +21,8 @@ class _ScannerScreenState extends State<ScannerScreen> {
   void initState() {
     super.initState();
     _cameraController = MobileScannerController(
-      detectionSpeed: DetectionSpeed.noDuplicates,
+      detectionSpeed: DetectionSpeed.normal,
+      detectionTimeoutMs: 500,
     );
   }
 
@@ -39,11 +40,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
       body: SafeArea(
         child: BlocConsumer<ScannerBloc, ScannerState>(
           listener: (context, state) {
-            if (state is ScannerSuccessState) {
-              _cameraController?.stop();
-            } else if (state is ScannerActiveState) {
-              _cameraController?.start();
-            }
+            // El BLoC gestiona el estado sin pausar bruscamente el hardware de video
           },
           builder: (context, state) {
             return Column(
@@ -52,9 +49,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   child: ScamLensHeader(showProtectedBadge: true),
                 ),
-
                 Expanded(flex: 3, child: _buildViewfinder(context, state)),
-
                 Expanded(flex: 2, child: _buildResultCard(context, state)),
               ],
             );
@@ -120,38 +115,44 @@ class _ScannerScreenState extends State<ScannerScreen> {
             MobileScanner(
               controller: _cameraController,
               onDetect: (capture) {
-                if (state is! ScannerActiveState) return;
-
-                final barcode = capture.barcodes.firstOrNull;
-                if (barcode?.rawValue != null) {
-                  context.read<ScannerBloc>().add(
-                    QRCodeScannedEvent(rawValue: barcode!.rawValue!),
-                  );
+                for (final barcode in capture.barcodes) {
+                  final raw = barcode.rawValue ?? barcode.displayValue;
+                  if (raw != null && raw.trim().isNotEmpty) {
+                    debugPrint('[SCAMLENS UI] Código detectado por cámara: $raw');
+                    context.read<ScannerBloc>().add(
+                          QRCodeScannedEvent(rawValue: raw),
+                        );
+                    break;
+                  }
                 }
               },
             ),
 
-            Container(
-              width: 240,
-              height: 240,
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: AppColors.accentCyan.withValues(alpha: 0.6),
-                  width: 2,
+            IgnorePointer(
+              child: Container(
+                width: 240,
+                height: 240,
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: AppColors.accentCyan.withValues(alpha: 0.6),
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                borderRadius: BorderRadius.circular(16),
               ),
             ),
-            // Texto guía inferior dentro del visor
-            const Positioned(
-              bottom: 24,
-              child: Text(
-                'APUNTA LA CÁMARA AL QR',
-                style: TextStyle(
-                  color: AppColors.accentCyan,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
+
+            const IgnorePointer(
+              child: Positioned(
+                bottom: 24,
+                child: Text(
+                  'APUNTA LA CÁMARA AL QR',
+                  style: TextStyle(
+                    color: AppColors.accentCyan,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                  ),
                 ),
               ),
             ),
@@ -196,6 +197,27 @@ class _ScannerScreenState extends State<ScannerScreen> {
                 'Enfoca un código QR físico para interceptar su contenido antes de que el navegador lo abra.',
                 style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
               ),
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.accentCyan,
+                  side: const BorderSide(color: AppColors.border),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                icon: const Icon(Icons.qr_code_2_rounded, size: 18),
+                label: const Text(
+                  'Simular lectura de QR (Prueba acortador)',
+                  style: TextStyle(fontSize: 12),
+                ),
+                onPressed: () {
+                  context.read<ScannerBloc>().add(
+                    QRCodeScannedEvent(rawValue: 'https://tinyurl.com/2p9cbe4r'),
+                  );
+                },
+              ),
             ],
 
             if (state is ScannerProcessingState) ...[
@@ -205,7 +227,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                     CircularProgressIndicator(color: AppColors.accentCyan),
                     SizedBox(height: 12),
                     Text(
-                      'Interceptando y analizando código...',
+                      'Interceptando y desacortando enlace...',
                       style: TextStyle(color: AppColors.textSecondary),
                     ),
                   ],
@@ -232,23 +254,91 @@ class _ScannerScreenState extends State<ScannerScreen> {
                       letterSpacing: 0.8,
                     ),
                   ),
+                  const Spacer(),
+                  if (state.wasShortened)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.warningYellow.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppColors.warningYellow),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.warning_amber_rounded,
+                            size: 12,
+                            color: AppColors.warningYellow,
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            'ACORTADOR DETECTADO',
+                            style: TextStyle(
+                              color: AppColors.warningYellow,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
+
               Container(
+                width: double.infinity,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: AppColors.background,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: AppColors.border),
                 ),
-                child: SelectableText(
-                  state.contentRaw,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 14,
-                    fontFamily: 'monospace',
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Contenido detectado en QR:',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 11,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    SelectableText(
+                      state.contentRaw,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 13,
+                        fontFamily: 'monospace',
+                      ),
+                    ),
+                    if (state.wasShortened) ...[
+                      const Divider(height: 18, color: AppColors.border),
+                      const Text(
+                        'Destino real desenmascarado:',
+                        style: TextStyle(
+                          color: AppColors.accentCyan,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      SelectableText(
+                        state.normalizedUrl,
+                        style: const TextStyle(
+                          color: AppColors.accentCyan,
+                          fontSize: 13,
+                          fontFamily: 'monospace',
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
               const SizedBox(height: 16),

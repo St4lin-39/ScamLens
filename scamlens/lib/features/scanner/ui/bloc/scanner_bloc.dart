@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:smart_permission/smart_permission.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:scamlens/core/services/url_service.dart';
+import 'package:smart_permission/smart_permission.dart';
 
 abstract class ScannerEvent {}
 
@@ -27,8 +29,16 @@ class ScannerProcessingState extends ScannerState {}
 
 class ScannerSuccessState extends ScannerState {
   final String contentRaw;
+  final String normalizedUrl;
   final bool isUrl;
-  ScannerSuccessState({required this.contentRaw, required this.isUrl});
+  final bool wasShortened;
+
+  ScannerSuccessState({
+    required this.contentRaw,
+    required this.normalizedUrl,
+    required this.isUrl,
+    required this.wasShortened,
+  });
 }
 
 class ScannerErrorState extends ScannerState {
@@ -37,23 +47,37 @@ class ScannerErrorState extends ScannerState {
 }
 
 class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
-  ScannerBloc() : super(ScannerInitialState()) {
+  final UrlService _urlService;
+
+  ScannerBloc({UrlService? urlService})
+      : _urlService = urlService ?? UrlServiceImpl(),
+        super(ScannerInitialState()) {
     on<CheckCameraPermissionEvent>(_onCheckCameraPermission);
     on<RequestCameraPermissionEvent>(_onRequestCameraPermission);
     on<QRCodeScannedEvent>(_onQRCodeScanned);
     on<ResetScannerEvent>((event, emit) => emit(ScannerActiveState()));
   }
+
   Future<void> _onCheckCameraPermission(
     CheckCameraPermissionEvent event,
     Emitter<ScannerState> emit,
   ) async {
-    final hasPermission = await SmartPermission.hasPermission(
-      Permission.camera,
-    );
-    if (hasPermission) {
+    if (kIsWeb) {
       emit(ScannerActiveState());
-    } else {
-      emit(ScannerPermissionRequiredState());
+      return;
+    }
+
+    try {
+      final hasPermission = await SmartPermission.hasPermission(
+        Permission.camera,
+      );
+      if (hasPermission) {
+        emit(ScannerActiveState());
+      } else {
+        emit(ScannerPermissionRequiredState());
+      }
+    } catch (_) {
+      emit(ScannerActiveState());
     }
   }
 
@@ -61,11 +85,20 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
     RequestCameraPermissionEvent event,
     Emitter<ScannerState> emit,
   ) async {
-    final status = await Permission.camera.request();
-    if (status.isGranted) {
+    if (kIsWeb) {
       emit(ScannerActiveState());
-    } else {
-      emit(ScannerPermissionRequiredState());
+      return;
+    }
+
+    try {
+      final status = await Permission.camera.request();
+      if (status.isGranted) {
+        emit(ScannerActiveState());
+      } else {
+        emit(ScannerPermissionRequiredState());
+      }
+    } catch (_) {
+      emit(ScannerActiveState());
     }
   }
 
@@ -73,20 +106,60 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
     QRCodeScannedEvent event,
     Emitter<ScannerState> emit,
   ) async {
-    emit(ScannerProcessingState());
-
-    final raw = event.rawValue.trim();
-    if (raw.isEmpty) {
-      emit(ScannerErrorState(errorMessage: 'Código QR vacío o ilegible'));
+    // Si ya estamos procesando o mostrando éxito, no duplicar
+    if (state is ScannerProcessingState || state is ScannerSuccessState) {
       return;
     }
 
-    final uri = Uri.tryParse(raw);
-    final isUrl =
-        uri != null &&
-        (uri.hasScheme && (uri.scheme == 'http' || uri.scheme == 'https') ||
-            raw.toLowerCase().startsWith('www.'));
+    emit(ScannerProcessingState());
 
-    emit(ScannerSuccessState(contentRaw: raw, isUrl: isUrl));
+    try {
+      final raw = event.rawValue.trim();
+      if (raw.isEmpty) {
+        emit(ScannerErrorState(errorMessage: 'Código QR vacío o ilegible'));
+        return;
+      }
+
+      final uri = Uri.tryParse(raw);
+      final isUrl = uri != null &&
+          ((uri.hasScheme && (uri.scheme == 'http' || uri.scheme == 'https')) ||
+              raw.toLowerCase().startsWith('www.'));
+
+      String normalizedUrl = raw;
+      bool wasShortened = false;
+
+      if (isUrl) {
+        try {
+          // 1. Normalización inicial
+          final initialNormalized = _urlService.normalizeUrl(raw);
+
+          // 2. Comprobar si proviene de un acortador conocido
+          wasShortened = _urlService.isShortenedUrl(initialNormalized);
+
+          // 3. Desacortar siguiendo cabeceras HTTP con timeout seguro
+          if (wasShortened) {
+            normalizedUrl = await _urlService
+                .unshortenUrl(initialNormalized)
+                .timeout(
+                  const Duration(seconds: 3),
+                  onTimeout: () => initialNormalized,
+                );
+          } else {
+            normalizedUrl = initialNormalized;
+          }
+        } catch (_) {
+          normalizedUrl = raw;
+        }
+      }
+
+      emit(ScannerSuccessState(
+        contentRaw: raw,
+        normalizedUrl: normalizedUrl,
+        isUrl: isUrl,
+        wasShortened: wasShortened,
+      ));
+    } catch (e) {
+      emit(ScannerErrorState(errorMessage: 'Error al procesar: $e'));
+    }
   }
 }

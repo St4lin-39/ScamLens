@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "icesi.edu.co.scamlens"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
