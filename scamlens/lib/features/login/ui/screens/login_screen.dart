@@ -38,10 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _localError = null);
     context.read<LoginBloc>().add(
-      LoginSubmitted(
-        email: email,
-        password: password,
-      ),
+      LoginSubmitted(email: email, password: password),
     );
   }
 
@@ -53,13 +50,12 @@ class _LoginScreenState extends State<LoginScreen> {
           padding: const EdgeInsets.all(24),
           child: BlocListener<LoginBloc, LoginState>(
             listener: (context, state) {
-              if (state.status == LoginStatus.success && state.profile != null) {
+              if (state.status == LoginStatus.success &&
+                  state.profile != null) {
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => HomeScreen(
-                      profile: state.profile!,
-                    ),
+                    builder: (_) => HomeScreen(profile: state.profile!),
                   ),
                   (route) => false,
                 );
