@@ -6,6 +6,12 @@ class AuthRepositoryImpl implements AuthRepository {
   final SupabaseAuthDatasource datasource;
 
   AuthRepositoryImpl(this.datasource);
+
+  @override
+  String? getCurrentUserId() {
+    return datasource.getCurrentUserId();
+  }
+
   @override
   Future<UserEntity> signUp({required String email, required String password}) {
     return datasource.signUp(email: email, password: password);

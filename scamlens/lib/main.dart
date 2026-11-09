@@ -39,7 +39,10 @@ Future<void> main() async {
     authRepository: authRepository,
     profileRepository: profileRepository,
   );
-  final getProfileUseCase = GetProfileUseCase(profileRepository);
+  final getProfileUseCase = GetProfileUseCase(
+    profileRepository,
+    authRepository,
+  );
   final signOutUseCase = SignOutUseCase(authRepository);
 
   runApp(

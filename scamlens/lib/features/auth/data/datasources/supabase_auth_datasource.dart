@@ -6,6 +6,10 @@ class SupabaseAuthDatasource {
 
   SupabaseAuthDatasource({required this.client});
 
+  String? getCurrentUserId() {
+    return client.auth.currentUser?.id;
+  }
+
   Future<UserEntity> signUp({
     required String email,
     required String password,
