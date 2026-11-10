@@ -142,9 +142,9 @@ class _ScannerScreenState extends State<ScannerScreen> {
               ),
             ),
 
-            const IgnorePointer(
-              child: Positioned(
-                bottom: 24,
+            const Positioned(
+              bottom: 24,
+              child: IgnorePointer(
                 child: Text(
                   'APUNTA LA CÁMARA AL QR',
                   style: TextStyle(

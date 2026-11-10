@@ -12,12 +12,13 @@ import 'package:scamlens/features/login/ui/screens/login_screen.dart';
 import 'package:scamlens/features/scanner/ui/bloc/scanner_bloc.dart';
 import 'package:scamlens/features/scanner/ui/screens/scanner_screen.dart';
 import 'package:scamlens/theme/app_theme.dart';
+import 'package:scamlens/shared/url_processing/domain/usecases/process_url_usecase.dart';
 
 class HomeScreen extends StatelessWidget {
   final Profile? initialProfile;
 
   const HomeScreen({super.key, Profile? initialProfile, Profile? profile})
-      : initialProfile = initialProfile ?? profile;
+    : initialProfile = initialProfile ?? profile;
 
   @override
   Widget build(BuildContext context) {
@@ -99,8 +100,10 @@ class _HomeScreenView extends StatelessWidget {
                 final initial = profile.name.isNotEmpty
                     ? profile.name[0].toUpperCase()
                     : 'S';
-                final formattedDate =
-                    profile.createdIn.toIso8601String().split('T').first;
+                final formattedDate = profile.createdIn
+                    .toIso8601String()
+                    .split('T')
+                    .first;
 
                 return RefreshIndicator(
                   color: AppColors.accentCyan,
@@ -125,7 +128,10 @@ class _HomeScreenView extends StatelessWidget {
                             gradient: const LinearGradient(
                               colors: [AppColors.accentCyan, AppColors.primary],
                             ),
-                            border: Border.all(color: AppColors.border, width: 3),
+                            border: Border.all(
+                              color: AppColors.border,
+                              width: 3,
+                            ),
                           ),
                           child: Text(
                             initial,
@@ -148,7 +154,9 @@ class _HomeScreenView extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           profile.email,
-                          style: const TextStyle(color: AppColors.textSecondary),
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                         const SizedBox(height: 28),
                         ProfileField(
@@ -186,9 +194,9 @@ class _HomeScreenView extends StatelessWidget {
                         PrimaryButton(
                           label: 'Cerrar sesión',
                           onPressed: () {
-                            context
-                                .read<ProfileBloc>()
-                                .add(SignOutRequestedEvent());
+                            context.read<ProfileBloc>().add(
+                              SignOutRequestedEvent(),
+                            );
                           },
                         ),
                       ],
@@ -213,8 +221,9 @@ class _HomeScreenView extends StatelessWidget {
               context,
               MaterialPageRoute(
                 builder: (_) => BlocProvider(
-                  create: (_) =>
-                      ScannerBloc()..add(CheckCameraPermissionEvent()),
+                  create: (_) => ScannerBloc(
+                    processUrlUseCase: context.read<ProcessUrlUseCase>(),
+                  )..add(CheckCameraPermissionEvent()),
                   child: const ScannerScreen(),
                 ),
               ),

@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:http/http.dart' as http;
+import 'package:scamlens/shared/url_processing/domain/services/url_normalizer.dart';
+import 'package:scamlens/shared/url_processing/domain/services/url_expander.dart';
+import 'package:scamlens/shared/url_processing/domain/usecases/process_url_usecase.dart';
+import 'package:scamlens/shared/url_processing/data/services/http_url_expander.dart';
 import 'package:scamlens/features/auth/data/datasources/supabase_auth_datasource.dart';
 import 'package:scamlens/features/auth/data/datasources/supabase_profile_datasource.dart';
 import 'package:scamlens/features/auth/data/repositories/auth_repository_impl.dart';
@@ -73,6 +78,20 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiRepositoryProvider(
       providers: [
+        RepositoryProvider<UrlNormalizer>(create: (_) => UrlNormalizer()),
+        RepositoryProvider<http.Client>(
+          create: (_) => http.Client(),
+          dispose: (client) => client.close(),
+        ),
+        RepositoryProvider<UrlExpander>(
+          create: (context) => HttpUrlExpander(context.read<http.Client>()),
+        ),
+        RepositoryProvider<ProcessUrlUseCase>(
+          create: (context) => ProcessUrlUseCase(
+            normalizer: context.read<UrlNormalizer>(),
+            expander: context.read<UrlExpander>(),
+          ),
+        ),
         RepositoryProvider<GetProfileUseCase>.value(value: getProfileUseCase),
         RepositoryProvider<SignOutUseCase>.value(value: signOutUseCase),
       ],

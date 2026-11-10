@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:scamlens/core/services/url_service.dart';
+import 'package:scamlens/shared/url_processing/domain/usecases/process_url_usecase.dart';
 import 'package:smart_permission/smart_permission.dart';
 
 abstract class ScannerEvent {}
@@ -47,11 +47,10 @@ class ScannerErrorState extends ScannerState {
 }
 
 class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
-  final UrlService _urlService;
+  final ProcessUrlUseCase processUrlUseCase;
 
-  ScannerBloc({UrlService? urlService})
-      : _urlService = urlService ?? UrlServiceImpl(),
-        super(ScannerInitialState()) {
+  ScannerBloc({required this.processUrlUseCase})
+    : super(ScannerInitialState()) {
     on<CheckCameraPermissionEvent>(_onCheckCameraPermission);
     on<RequestCameraPermissionEvent>(_onRequestCameraPermission);
     on<QRCodeScannedEvent>(_onQRCodeScanned);
@@ -120,44 +119,16 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
         return;
       }
 
-      final uri = Uri.tryParse(raw);
-      final isUrl = uri != null &&
-          ((uri.hasScheme && (uri.scheme == 'http' || uri.scheme == 'https')) ||
-              raw.toLowerCase().startsWith('www.'));
+      final result = await processUrlUseCase(raw);
 
-      String normalizedUrl = raw;
-      bool wasShortened = false;
-
-      if (isUrl) {
-        try {
-          // 1. Normalización inicial
-          final initialNormalized = _urlService.normalizeUrl(raw);
-
-          // 2. Comprobar si proviene de un acortador conocido
-          wasShortened = _urlService.isShortenedUrl(initialNormalized);
-
-          // 3. Desacortar siguiendo cabeceras HTTP con timeout seguro
-          if (wasShortened) {
-            normalizedUrl = await _urlService
-                .unshortenUrl(initialNormalized)
-                .timeout(
-                  const Duration(seconds: 3),
-                  onTimeout: () => initialNormalized,
-                );
-          } else {
-            normalizedUrl = initialNormalized;
-          }
-        } catch (_) {
-          normalizedUrl = raw;
-        }
-      }
-
-      emit(ScannerSuccessState(
-        contentRaw: raw,
-        normalizedUrl: normalizedUrl,
-        isUrl: isUrl,
-        wasShortened: wasShortened,
-      ));
+      emit(
+        ScannerSuccessState(
+          contentRaw: result.contentRaw,
+          normalizedUrl: result.normalizedUrl,
+          isUrl: result.isUrl,
+          wasShortened: result.wasShortened,
+        ),
+      );
     } catch (e) {
       emit(ScannerErrorState(errorMessage: 'Error al procesar: $e'));
     }
