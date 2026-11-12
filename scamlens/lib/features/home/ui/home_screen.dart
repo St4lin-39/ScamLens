@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:scamlens/features/smishing/domain/usecases/analyze_sms_usecase.dart';
+import 'package:scamlens/features/smishing/ui/bloc/smishing_bloc.dart';
+import 'package:scamlens/features/smishing/ui/screens/smishing_screen.dart';
 import 'package:scamlens/components/error_message.dart';
 import 'package:scamlens/components/primary_button.dart';
 import 'package:scamlens/components/profile_field.dart';
@@ -216,6 +219,19 @@ class _HomeScreenView extends StatelessWidget {
         unselectedItemColor: AppColors.textSecondary,
         currentIndex: 2,
         onTap: (index) {
+          if (index == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => BlocProvider(
+                  create: (_) => SmishingBloc(
+                    analyzeSmsUseCase: context.read<AnalyzeSmsUseCase>(),
+                  ),
+                  child: const SmishingScreen(),
+                ),
+              ),
+            );
+          }
           if (index == 0) {
             Navigator.push(
               context,

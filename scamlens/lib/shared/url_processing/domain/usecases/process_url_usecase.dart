@@ -1,6 +1,8 @@
 import '../entities/url_processing_result.dart';
+import '../entities/url_expansion_result.dart';
 import '../services/url_expander.dart';
 import '../services/url_normalizer.dart';
+import '../services/web_url_recognizer.dart';
 
 class ProcessUrlUseCase {
   final UrlNormalizer normalizer;
@@ -23,38 +25,46 @@ class ProcessUrlUseCase {
     final isUrl =
         uri != null &&
         ((uri.hasScheme && (uri.scheme == 'http' || uri.scheme == 'https')) ||
-            raw.toLowerCase().startsWith('www.'));
+            raw.toLowerCase().startsWith('www.') ||
+            WebUrlRecognizer.isWebUrl(raw));
 
     String normalizedUrl = raw;
     bool wasShortened = false;
+    var expansion = UrlExpansionResult(status: UrlExpansionStatus.notAttempted);
     if (isUrl) {
       try {
         final initialNormalized = normalizer.normalizeUrl(raw);
         wasShortened = normalizer.isShortenedUrl(initialNormalized);
-        if (wasShortened) {
-          normalizedUrl = await _expand(initialNormalized).timeout(
-            const Duration(seconds: 3),
-            onTimeout: () => initialNormalized,
-          );
-        } else {
-          normalizedUrl = initialNormalized;
-        }
+        normalizedUrl = initialNormalized;
       } catch (_) {
         normalizedUrl = raw;
+        expansion = UrlExpansionResult(
+          status: UrlExpansionStatus.failed,
+          failureReason: UrlExpansionFailureReason.unknown,
+        );
+      }
+      if (wasShortened) {
+        // Display normalization must not change the URI sent to the server.
+        final requestUrl = WebUrlRecognizer.hasHttpScheme(raw)
+            ? raw
+            : 'https://$raw';
+        try {
+          expansion = await expander.expandUrl(requestUrl);
+        } catch (_) {
+          expansion = UrlExpansionResult(
+            status: UrlExpansionStatus.failed,
+            failureReason: UrlExpansionFailureReason.unknown,
+          );
+        }
       }
     }
 
     return UrlProcessingResult(
-      contentRaw: raw,
+      contentRaw: content,
       normalizedUrl: normalizedUrl,
       isUrl: isUrl,
       wasShortened: wasShortened,
+      expansion: expansion,
     );
-  }
-
-  Future<String> _expand(String url) async {
-    // Preserve the initial and final normalization of the legacy service.
-    final expanded = await expander.expandUrl(normalizer.normalizeUrl(url));
-    return normalizer.normalizeUrl(expanded);
   }
 }

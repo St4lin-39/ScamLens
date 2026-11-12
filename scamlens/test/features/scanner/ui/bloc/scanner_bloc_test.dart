@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:scamlens/shared/url_processing/domain/entities/url_expansion_result.dart';
 import 'package:scamlens/shared/url_processing/domain/services/url_normalizer.dart';
 import 'package:scamlens/shared/url_processing/domain/services/url_expander.dart';
 import 'package:scamlens/shared/url_processing/domain/usecases/process_url_usecase.dart';
@@ -11,7 +12,7 @@ class _UrlNormalizerDouble implements UrlNormalizer {
   final calls = <String>[];
   bool shortened = false;
   bool failNormalization = false;
-  Future<String> Function(String)? expand;
+  Future<UrlExpansionResult> Function(String)? expand;
 
   @override
   String normalizeUrl(String rawUrl) {
@@ -37,12 +38,19 @@ class _UrlExpanderDouble implements UrlExpander {
   _UrlExpanderDouble(this.service);
 
   @override
-  Future<String> expandUrl(String url) {
+  Future<UrlExpansionResult> expandUrl(String url) {
     service.calls.add('expand:$url');
     return service.expand?.call(url) ??
-        Future.value('https://destination.example/');
+        Future.value(resolved('https://destination.example/'));
   }
 }
+
+UrlExpansionResult resolved(String url) => UrlExpansionResult(
+  status: UrlExpansionStatus.resolved,
+  redirectCount: 1,
+  verifiedDestination: url,
+  lastHttpStatus: 200,
+);
 
 void main() {
   late _UrlNormalizerDouble service;
@@ -69,8 +77,10 @@ void main() {
   test(
     'maps the real use case result after expanding a recognized shortener',
     () async {
-      service.expand = (_) async =>
-          'https://DESTINATION.example/path?utm_source=x&id=2#end';
+      final expansion = resolved(
+        'https://destination.example/path?utm_source=x&id=2',
+      );
+      service.expand = (_) async => expansion;
       final integratedBloc = ScannerBloc(
         processUrlUseCase: ProcessUrlUseCase(
           normalizer: UrlNormalizer(),
@@ -84,12 +94,41 @@ void main() {
       integratedBloc.add(QRCodeScannedEvent(rawValue: ' https://BIT.LY/a '));
       final result = await resultFuture as ScannerSuccessState;
       expect(result.contentRaw, 'https://BIT.LY/a');
-      expect(result.normalizedUrl, 'https://destination.example/path?id=2#end');
+      expect(result.normalizedUrl, 'https://bit.ly/a');
       expect(result.isUrl, isTrue);
       expect(result.wasShortened, isTrue);
-      expect(service.calls, ['expand:https://bit.ly/a']);
+      expect(result.result.expansion, same(expansion));
+      expect(service.calls, ['expand:https://BIT.LY/a']);
     },
   );
+
+  for (final raw in [
+    'sms.bellapiel.com.co/2BP5ZRvI',
+    'HTTPS://sms.bellapiel.com.co/2BP5ZRvI',
+  ]) {
+    test(
+      'real processing normalizes scanner input $raw without expansion',
+      () async {
+        final integratedBloc = ScannerBloc(
+          processUrlUseCase: ProcessUrlUseCase(
+            normalizer: UrlNormalizer(),
+            expander: _UrlExpanderDouble(service),
+          ),
+        );
+        addTearDown(integratedBloc.close);
+        final future = integratedBloc.stream.firstWhere(
+          (state) => state is ScannerSuccessState,
+        );
+        integratedBloc.add(QRCodeScannedEvent(rawValue: raw));
+        final result = await future as ScannerSuccessState;
+        expect(result.contentRaw, raw);
+        expect(result.normalizedUrl, 'https://sms.bellapiel.com.co/2BP5ZRvI');
+        expect(result.isUrl, isTrue);
+        expect(result.wasShortened, isFalse);
+        expect(service.calls, isEmpty);
+      },
+    );
+  }
 
   Future<ScannerState> scan(String raw) {
     final result = bloc.stream.firstWhere(
@@ -107,8 +146,12 @@ void main() {
     'HTTPS://EXAMPLE.COM': true,
     // Current classification does not require a host.
     'https:relative': true,
-    'example.com': false,
+    'example.com': true,
     'hello world': false,
+    'Consulta example.com ahora': false,
+    'person@example.com': false,
+    '1.2.3': false,
+    'sms.bellapiel.com.co/2BP5ZRvI': true,
     'mailto:person@example.com': false,
   };
   for (final entry in classifications.entries) {
@@ -151,7 +194,7 @@ void main() {
   test(
     'shortener expands and remains processing until the result arrives',
     () async {
-      final pending = Completer<String>();
+      final pending = Completer<UrlExpansionResult>();
       service.shortened = true;
       service.expand = (_) => pending.future;
       final processing = bloc.stream.firstWhere(
@@ -160,17 +203,15 @@ void main() {
       final resultFuture = scan('https://bit.ly/a');
       await processing;
       expect(bloc.state, isA<ScannerProcessingState>());
-      pending.complete('https://destination.example/');
+      pending.complete(resolved('https://destination.example/'));
       final result = await resultFuture as ScannerSuccessState;
-      expect(result.normalizedUrl, 'https://destination.example/');
+      expect(result.normalizedUrl, 'https://normalized.example/');
       expect(result.isUrl, isTrue);
       expect(result.wasShortened, isTrue);
       expect(service.calls, [
         'normalize:https://bit.ly/a',
         'shortened:https://normalized.example/',
-        'normalize:https://normalized.example/',
-        'expand:https://normalized.example/',
-        'normalize:https://destination.example/',
+        'expand:https://bit.ly/a',
       ]);
     },
   );
@@ -186,36 +227,16 @@ void main() {
   });
 
   test(
-    'expansion exception falls back to raw but keeps shortener flag',
+    'expansion exception keeps normalized input and shortener flag',
     () async {
       service.shortened = true;
-      service.expand = (_) => Future<String>.delayed(
+      service.expand = (_) => Future<UrlExpansionResult>.delayed(
         const Duration(milliseconds: 1),
         () => throw StateError('Simulated failure'),
       );
       final result = await scan(' https://bit.ly/a ') as ScannerSuccessState;
-      expect(result.normalizedUrl, 'https://bit.ly/a');
-      expect(result.wasShortened, isTrue);
-      expect(states, [
-        isA<ScannerProcessingState>(),
-        isA<ScannerSuccessState>(),
-      ]);
-    },
-  );
-
-  test(
-    'three-second timeout uses initial normalized URL; late result is ignored',
-    () async {
-      final pending = Completer<String>();
-      service.shortened = true;
-      service.expand = (_) => pending.future;
-      final result = await scan('https://bit.ly/a') as ScannerSuccessState;
       expect(result.normalizedUrl, 'https://normalized.example/');
       expect(result.wasShortened, isTrue);
-      expect(pending.isCompleted, isFalse);
-      pending.complete('https://late.example/');
-      await Future<void>.delayed(Duration.zero);
-      expect(bloc.state, same(result));
       expect(states, [
         isA<ScannerProcessingState>(),
         isA<ScannerSuccessState>(),
@@ -223,8 +244,20 @@ void main() {
     },
   );
 
+  test('typed timeout preserves normalized input and shortener flag', () async {
+    service.shortened = true;
+    service.expand = (_) async =>
+        UrlExpansionResult(status: UrlExpansionStatus.timeout);
+    final result = await scan('https://bit.ly/a') as ScannerSuccessState;
+    expect(result.normalizedUrl, 'https://normalized.example/');
+    expect(result.wasShortened, isTrue);
+    await Future<void>.delayed(Duration.zero);
+    expect(bloc.state, same(result));
+    expect(states, [isA<ScannerProcessingState>(), isA<ScannerSuccessState>()]);
+  });
+
   test('duplicate events are ignored while processing and after success; reset allows another scan', () async {
-    final pending = Completer<String>();
+    final pending = Completer<UrlExpansionResult>();
     service.shortened = true;
     service.expand = (_) => pending.future;
     final processing = bloc.stream.firstWhere(
@@ -234,8 +267,8 @@ void main() {
     await processing;
     bloc.add(QRCodeScannedEvent(rawValue: 'https://ignored.example/'));
     await Future<void>.delayed(Duration.zero);
-    expect(service.calls.length, 4);
-    pending.complete('https://destination.example/');
+    expect(service.calls.length, 3);
+    pending.complete(resolved('https://destination.example/'));
     final result = await resultFuture;
     bloc.add(QRCodeScannedEvent(rawValue: 'ignored text'));
     await Future<void>.delayed(Duration.zero);

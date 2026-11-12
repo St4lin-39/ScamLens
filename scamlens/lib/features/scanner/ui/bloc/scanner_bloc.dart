@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:scamlens/shared/url_processing/domain/usecases/process_url_usecase.dart';
+import 'package:scamlens/shared/url_processing/domain/entities/url_processing_result.dart';
 import 'package:smart_permission/smart_permission.dart';
 
 abstract class ScannerEvent {}
@@ -28,17 +29,14 @@ class ScannerActiveState extends ScannerState {}
 class ScannerProcessingState extends ScannerState {}
 
 class ScannerSuccessState extends ScannerState {
-  final String contentRaw;
-  final String normalizedUrl;
-  final bool isUrl;
-  final bool wasShortened;
+  final UrlProcessingResult result;
 
-  ScannerSuccessState({
-    required this.contentRaw,
-    required this.normalizedUrl,
-    required this.isUrl,
-    required this.wasShortened,
-  });
+  String get contentRaw => result.contentRaw;
+  String get normalizedUrl => result.normalizedUrl;
+  bool get isUrl => result.isUrl;
+  bool get wasShortened => result.wasShortened;
+
+  ScannerSuccessState({required this.result});
 }
 
 class ScannerErrorState extends ScannerState {
@@ -121,14 +119,7 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
 
       final result = await processUrlUseCase(raw);
 
-      emit(
-        ScannerSuccessState(
-          contentRaw: result.contentRaw,
-          normalizedUrl: result.normalizedUrl,
-          isUrl: result.isUrl,
-          wasShortened: result.wasShortened,
-        ),
-      );
+      emit(ScannerSuccessState(result: result));
     } catch (e) {
       emit(ScannerErrorState(errorMessage: 'Error al procesar: $e'));
     }
