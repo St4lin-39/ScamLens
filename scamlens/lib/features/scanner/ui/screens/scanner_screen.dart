@@ -4,6 +4,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:scamlens/components/error_message.dart';
 import 'package:scamlens/components/primary_button.dart';
 import 'package:scamlens/components/scamlens_header.dart';
+import 'package:scamlens/components/url_expansion_details.dart';
 import 'package:scamlens/features/scanner/ui/bloc/scanner_bloc.dart';
 import 'package:scamlens/theme/app_theme.dart';
 
@@ -118,10 +119,12 @@ class _ScannerScreenState extends State<ScannerScreen> {
                 for (final barcode in capture.barcodes) {
                   final raw = barcode.rawValue ?? barcode.displayValue;
                   if (raw != null && raw.trim().isNotEmpty) {
-                    debugPrint('[SCAMLENS UI] Código detectado por cámara: $raw');
+                    debugPrint(
+                      '[SCAMLENS UI] Código detectado por cámara: $raw',
+                    );
                     context.read<ScannerBloc>().add(
-                          QRCodeScannedEvent(rawValue: raw),
-                        );
+                      QRCodeScannedEvent(rawValue: raw),
+                    );
                     break;
                   }
                 }
@@ -214,7 +217,9 @@ class _ScannerScreenState extends State<ScannerScreen> {
                 ),
                 onPressed: () {
                   context.read<ScannerBloc>().add(
-                    QRCodeScannedEvent(rawValue: 'https://tinyurl.com/2p9cbe4r'),
+                    QRCodeScannedEvent(
+                      rawValue: 'https://tinyurl.com/2p9cbe4r',
+                    ),
                   );
                 },
               ),
@@ -320,7 +325,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                     if (state.wasShortened) ...[
                       const Divider(height: 18, color: AppColors.border),
                       const Text(
-                        'Destino real desenmascarado:',
+                        'URL normalizada:',
                         style: TextStyle(
                           color: AppColors.accentCyan,
                           fontSize: 11,
@@ -338,6 +343,30 @@ class _ScannerScreenState extends State<ScannerScreen> {
                         ),
                       ),
                     ],
+                    if (state.result.expansion?.verifiedDestination
+                        case final destination?) ...[
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Destino HTTP confirmado:',
+                        style: TextStyle(
+                          color: AppColors.accentCyan,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      SelectableText(
+                        destination,
+                        style: const TextStyle(
+                          color: AppColors.accentCyan,
+                          fontSize: 13,
+                          fontFamily: 'monospace',
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                    if (state.isUrl)
+                      UrlExpansionDetails(expansion: state.result.expansion),
                   ],
                 ),
               ),
