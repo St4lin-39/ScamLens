@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:scamlens/shared/url_processing/domain/entities/url_expansion_result.dart';
 import 'package:scamlens/features/smishing/domain/entities/sms_analysis_result.dart';
 import 'package:scamlens/features/smishing/domain/usecases/analyze_sms_usecase.dart';
 import 'package:scamlens/features/smishing/ui/bloc/smishing_bloc.dart';
@@ -73,11 +74,18 @@ void main() {
   test(
     'emits loading then success and preserves the complete result identity',
     () async {
-      const url = UrlProcessingResult(
-        contentRaw: 'www.example.com',
-        normalizedUrl: 'https://www.example.com/',
+      final expansion = UrlExpansionResult(
+        status: UrlExpansionStatus.timeout,
+        redirectCount: 1,
+        announcedDestination: 'https://destination.example/',
+        lastHttpStatus: 302,
+      );
+      final url = UrlProcessingResult(
+        contentRaw: 'https://bit.ly/a',
+        normalizedUrl: 'https://bit.ly/a',
         isUrl: true,
-        wasShortened: false,
+        wasShortened: true,
+        expansion: expansion,
       );
       final result = SmsAnalysisResult(
         originalText: '  SMS  ',
@@ -88,6 +96,8 @@ void main() {
       expect(states, [isA<SmishingLoading>(), isA<SmishingSuccess>()]);
       expect(success.result, same(result));
       expect(success.result.urls, same(result.urls));
+      expect(success.result.urls.first.expansion, same(expansion));
+      expect(success.result.urls.first.expansion!.verifiedDestination, isNull);
       expect(useCase.calls, ['  SMS  ']);
     },
   );

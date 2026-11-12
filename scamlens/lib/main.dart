@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:http/http.dart' as http;
+import 'package:scamlens/features/smishing/domain/services/sms_url_extractor.dart';
+import 'package:scamlens/features/smishing/domain/usecases/analyze_sms_usecase.dart';
+import 'package:scamlens/shared/url_processing/data/transport/expansion_http_session.dart';
+import 'package:scamlens/shared/url_processing/data/transport/expansion_http_session_factory.dart';
 import 'package:scamlens/shared/url_processing/domain/services/url_normalizer.dart';
 import 'package:scamlens/shared/url_processing/domain/services/url_expander.dart';
 import 'package:scamlens/shared/url_processing/domain/usecases/process_url_usecase.dart';
@@ -79,17 +82,25 @@ class MyApp extends StatelessWidget {
     return MultiRepositoryProvider(
       providers: [
         RepositoryProvider<UrlNormalizer>(create: (_) => UrlNormalizer()),
-        RepositoryProvider<http.Client>(
-          create: (_) => http.Client(),
-          dispose: (client) => client.close(),
+        RepositoryProvider<ExpansionHttpSessionFactory>(
+          create: (_) => createExpansionHttpSession,
         ),
         RepositoryProvider<UrlExpander>(
-          create: (context) => HttpUrlExpander(context.read<http.Client>()),
+          create: (context) => HttpUrlExpander(
+            sessionFactory: context.read<ExpansionHttpSessionFactory>(),
+          ),
         ),
         RepositoryProvider<ProcessUrlUseCase>(
           create: (context) => ProcessUrlUseCase(
             normalizer: context.read<UrlNormalizer>(),
             expander: context.read<UrlExpander>(),
+          ),
+        ),
+        RepositoryProvider<SmsUrlExtractor>(create: (_) => SmsUrlExtractor()),
+        RepositoryProvider<AnalyzeSmsUseCase>(
+          create: (context) => AnalyzeSmsUseCase(
+            extractor: context.read<SmsUrlExtractor>(),
+            processUrlUseCase: context.read<ProcessUrlUseCase>(),
           ),
         ),
         RepositoryProvider<GetProfileUseCase>.value(value: getProfileUseCase),

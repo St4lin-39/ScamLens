@@ -31,7 +31,47 @@ void main() {
       'www.b.example',
       'http://c.example',
     ],
-    'example.com ftp://example.com user@www.example.com abcwww.example.com': [],
+    'example.com ftp://example.com user@www.example.com abcwww.example.com': [
+      'example.com',
+      'abcwww.example.com',
+    ],
+    'ñexample.com éhttps://example.com palabra_https://example.com': [],
+    'HtTpS://Example.com/a': ['HtTpS://Example.com/a'],
+    'sms.bellapiel.com.co/2BP5ZRvI sms.bellapiel.com.co/Tbx5JpyP': [
+      'sms.bellapiel.com.co/2BP5ZRvI',
+      'sms.bellapiel.com.co/Tbx5JpyP',
+    ],
+    'http://a.com https://b.com www.c.com d.com/ruta bit.ly/abc123 d.com/ruta':
+        [
+          'http://a.com',
+          'https://b.com',
+          'www.c.com',
+          'd.com/ruta',
+          'bit.ly/abc123',
+          'd.com/ruta',
+        ],
+    'subdominio.banco.com.co/acceso portal.gov.co/a campus.edu.co/b example.unlistedtld/a':
+        [
+          'subdominio.banco.com.co/acceso',
+          'portal.gov.co/a',
+          'campus.edu.co/b',
+          'example.unlistedtld/a',
+        ],
+    '"example.com:8443/a_(b)?items=a,b&x=2#part", (example.com/a_(b)).': [
+      'example.com:8443/a_(b)?items=a,b&x=2#part',
+      'example.com/a_(b)',
+    ],
+    '192.168.1.1/a http://127.0.0.1 https://255.255.255.255/a': [
+      '192.168.1.1/a',
+      'http://127.0.0.1',
+      'https://255.255.255.255/a',
+    ],
+    '192.168.1.1 256.1.1.1/a 1.2.3/a 01.2.3.4/a https://999.1.1.1/a': [],
+    '11:11 12/11 12.11.2026 30.5 1.2.3 v1.2.3 correo+tag@example.com user@www.example.com':
+        [],
+    'banco[.]ejemplo[.]com/login hxxps://example.com example . com': [],
+    'prefix_https://example.com -bad.example.com https://bad.example:0/a example.com:65536/a':
+        [],
     'https:// https://[invalid www. https://-bad.example https://bad_.example':
         [],
     '“https://a.example” <www.b.example>': [

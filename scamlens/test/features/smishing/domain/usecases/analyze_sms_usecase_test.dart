@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:scamlens/shared/url_processing/domain/entities/url_expansion_result.dart';
 import 'package:scamlens/features/smishing/domain/services/sms_url_extractor.dart';
 import 'package:scamlens/features/smishing/domain/usecases/analyze_sms_usecase.dart';
 import 'package:scamlens/shared/url_processing/domain/entities/url_processing_result.dart';
@@ -12,9 +13,15 @@ class _ControlledExpander implements UrlExpander {
   final calls = <String>[];
 
   @override
-  Future<String> expandUrl(String url) async {
+  Future<UrlExpansionResult> expandUrl(String url) async {
     calls.add(url);
-    return 'https://DESTINATION.example/path?utm_source=sms&id=2#end';
+    return UrlExpansionResult(
+      status: UrlExpansionStatus.resolved,
+      redirectCount: 1,
+      verifiedDestination:
+          'https://destination.example/path?utm_source=sms&id=2',
+      lastHttpStatus: 200,
+    );
   }
 }
 
@@ -53,15 +60,32 @@ void main() {
   }
 
   test(
-    'message without supported URLs returns empty list and original text',
+    'bare domain in a message is processed and original text is retained',
     () async {
       const text = '  Consulta example.com cuando quieras.  ';
       final result = await analyze(text);
       expect(result.originalText, text);
-      expect(result.urls, isEmpty);
-      expect(processor.calls, isEmpty);
+      expect(result.urls.single.normalizedUrl, 'https://example.com/');
+      expect(processor.calls, ['example.com']);
     },
   );
+
+  test('BELLA PIEL preserves both occurrences and normalizes through processor', () async {
+    const text =
+        'BELLA PIEL: ¿Manifestaste autocuidado? Hoy 11:11 hasta 30% Off en ISDIN sms.bellapiel.com.co/2BP5ZRvI WP sms.bellapiel.com.co/Tbx5JpyP hasta 12/11 T&C';
+    final result = await analyze(text);
+    expect(result.originalText, text);
+    expect(processor.calls, [
+      'sms.bellapiel.com.co/2BP5ZRvI',
+      'sms.bellapiel.com.co/Tbx5JpyP',
+    ]);
+    expect(result.urls.map((url) => url.contentRaw), processor.calls);
+    expect(result.urls.map((url) => url.normalizedUrl), [
+      'https://sms.bellapiel.com.co/2BP5ZRvI',
+      'https://sms.bellapiel.com.co/Tbx5JpyP',
+    ]);
+    expect(result.urls.every((url) => url.isUrl && !url.wasShortened), isTrue);
+  });
 
   test('normalizes a URL using the existing processor', () async {
     final result = await analyze(
@@ -105,13 +129,31 @@ void main() {
       final result = await usecase('https://bit.ly/a https://bit.ly/a');
       expect(expander.calls, ['https://bit.ly/a']);
       expect(result.urls, hasLength(2));
-      expect(
-        result.urls.first.normalizedUrl,
-        'https://destination.example/path?id=2#end',
-      );
+      expect(result.urls.first.normalizedUrl, 'https://bit.ly/a');
       expect(result.urls.first.wasShortened, isTrue);
+      expect(result.urls.first.expansion!.status, UrlExpansionStatus.resolved);
+      expect(
+        result.urls.first.expansion!.verifiedDestination,
+        'https://destination.example/path?utm_source=sms&id=2',
+      );
     },
   );
+
+  test('bare shortener uses only the existing expansion flow', () async {
+    final expander = _ControlledExpander();
+    final usecase = AnalyzeSmsUseCase(
+      extractor: SmsUrlExtractor(),
+      processUrlUseCase: ProcessUrlUseCase(
+        normalizer: UrlNormalizer(),
+        expander: expander,
+      ),
+    );
+    final result = await usecase('bit.ly/a bit.ly/a');
+    expect(expander.calls, ['https://bit.ly/a']);
+    expect(result.urls, hasLength(2));
+    expect(result.urls.every((url) => url.isUrl && url.wasShortened), isTrue);
+    expect(result.urls.first.normalizedUrl, 'https://bit.ly/a');
+  });
 
   for (final synchronous in [true, false]) {
     test(
