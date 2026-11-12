@@ -13,8 +13,8 @@ void main() {
       'https://example.com': 'https://example.com/',
       '  www.Example.com  ': 'https://www.example.com/',
       'https://EXAMPLE.COM/SomePath': 'https://example.com/SomePath',
-      // Scheme detection is case sensitive before Uri parsing.
-      'HTTPS://EXAMPLE.COM': 'https://https//EXAMPLE.COM',
+      // HTTP scheme recognition is case insensitive.
+      'HTTPS://EXAMPLE.COM': 'https://example.com/',
       'http://example.com:80': 'http://example.com/',
       'https://example.com:443': 'https://example.com/',
       'https://example.com:8443': 'https://example.com:8443/',

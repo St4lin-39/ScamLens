@@ -1,5 +1,7 @@
 import 'package:scamlens/core/config/url_config.dart';
 
+import 'web_url_recognizer.dart';
+
 class UrlNormalizer {
   bool isShortenedUrl(String url) {
     try {
@@ -18,7 +20,7 @@ class UrlNormalizer {
     if (cleaned.isEmpty) return '';
 
     // Si no tiene esquema, asumimos https://
-    if (!cleaned.startsWith('http://') && !cleaned.startsWith('https://')) {
+    if (!WebUrlRecognizer.hasHttpScheme(cleaned)) {
       cleaned = 'https://$cleaned';
     }
 
