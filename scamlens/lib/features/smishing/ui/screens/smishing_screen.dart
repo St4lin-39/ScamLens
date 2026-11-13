@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:scamlens/components/url_expansion_details.dart';
 import 'package:scamlens/features/smishing/ui/bloc/smishing_bloc.dart';
 import 'package:scamlens/theme/app_theme.dart';
+import 'package:scamlens/components/brand_impersonation_banner.dart';
 
 class SmishingScreen extends StatefulWidget {
   const SmishingScreen({super.key});
@@ -172,6 +173,10 @@ class _SmishingScreenState extends State<SmishingScreen> {
                               const Text('Destino HTTP confirmado:'),
                               SelectableText(destination),
                             ],
+                            BrandImpersonationBanner(
+                              impersonation: url.brandImpersonation,
+                            ),
+
                             UrlExpansionDetails(expansion: url.expansion),
                           ],
                         ),

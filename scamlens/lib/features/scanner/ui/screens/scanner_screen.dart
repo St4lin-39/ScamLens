@@ -7,6 +7,7 @@ import 'package:scamlens/components/scamlens_header.dart';
 import 'package:scamlens/components/url_expansion_details.dart';
 import 'package:scamlens/features/scanner/ui/bloc/scanner_bloc.dart';
 import 'package:scamlens/theme/app_theme.dart';
+import 'package:scamlens/components/brand_impersonation_banner.dart';
 
 class ScannerScreen extends StatefulWidget {
   const ScannerScreen({super.key});
@@ -365,6 +366,10 @@ class _ScannerScreenState extends State<ScannerScreen> {
                         ),
                       ),
                     ],
+                    if (state.isUrl)
+                      BrandImpersonationBanner(
+                        impersonation: state.result.brandImpersonation,
+                      ),
                     if (state.isUrl)
                       UrlExpansionDetails(expansion: state.result.expansion),
                   ],
