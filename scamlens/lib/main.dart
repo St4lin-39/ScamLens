@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:scamlens/features/smishing/domain/services/sms_url_extractor.dart';
 import 'package:scamlens/features/smishing/domain/usecases/analyze_sms_usecase.dart';
+import 'package:scamlens/shared/brand_impersonation/data/datasources/supabase_official_brand_datasource.dart';
+import 'package:scamlens/shared/brand_impersonation/data/repositories/official_brand_repository_impl.dart';
+import 'package:scamlens/shared/brand_impersonation/domain/repositories/official_brand_repository.dart';
+import 'package:scamlens/shared/brand_impersonation/domain/usecases/detect_brand_impersonation_usecase.dart';
 import 'package:scamlens/shared/url_processing/data/transport/expansion_http_session.dart';
 import 'package:scamlens/shared/url_processing/data/transport/expansion_http_session_factory.dart';
 import 'package:scamlens/shared/url_processing/domain/services/url_normalizer.dart';
@@ -90,10 +94,24 @@ class MyApp extends StatelessWidget {
             sessionFactory: context.read<ExpansionHttpSessionFactory>(),
           ),
         ),
+        RepositoryProvider<OfficialBrandRepository>(
+          create: (_) => OfficialBrandRepositoryImpl(
+            datasource: SupabaseOfficialBrandDatasource(
+              client: Supabase.instance.client,
+            ),
+          ),
+        ),
+        RepositoryProvider<DetectBrandImpersonationUseCase>(
+          create: (context) => DetectBrandImpersonationUseCase(
+            repository: context.read<OfficialBrandRepository>(),
+          ),
+        ),
         RepositoryProvider<ProcessUrlUseCase>(
           create: (context) => ProcessUrlUseCase(
             normalizer: context.read<UrlNormalizer>(),
             expander: context.read<UrlExpander>(),
+            detectBrandImpersonationUseCase:
+                context.read<DetectBrandImpersonationUseCase>(),
           ),
         ),
         RepositoryProvider<SmsUrlExtractor>(create: (_) => SmsUrlExtractor()),

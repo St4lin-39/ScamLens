@@ -1,3 +1,4 @@
+import '../../../brand_impersonation/domain/entities/brand_impersonation_result.dart';
 import 'url_expansion_result.dart';
 
 class UrlProcessingResult {
@@ -13,11 +14,15 @@ class UrlProcessingResult {
   /// It must not be interpreted as notAttempted, failure or success.
   final UrlExpansionResult? expansion;
 
+  /// Heuristic brand impersonation analysis (Levenshtein against official_brand).
+  final BrandImpersonationResult? brandImpersonation;
+
   const UrlProcessingResult({
     required this.contentRaw,
     required this.normalizedUrl,
     required this.isUrl,
     required this.wasShortened,
     this.expansion,
+    this.brandImpersonation,
   });
 }
