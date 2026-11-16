@@ -4,7 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:scamlens/components/url_expansion_details.dart';
 import 'package:scamlens/features/smishing/ui/bloc/smishing_bloc.dart';
 import 'package:scamlens/theme/app_theme.dart';
-import 'package:scamlens/components/brand_impersonation_banner.dart';
+import 'package:scamlens/components/risk_traffic_light.dart';
+import 'package:scamlens/components/analysis_progress_view.dart';
 
 class SmishingScreen extends StatefulWidget {
   const SmishingScreen({super.key});
@@ -74,8 +75,8 @@ class _SmishingScreenState extends State<SmishingScreen> {
                 ),
                 const SizedBox(height: 16),
                 const Text(
-                  'Extrae, normaliza y consulta la expansión de los enlaces de un SMS. '
-                  'No se evalúa el contenido del mensaje ni la seguridad de los enlaces.',
+                  'Extrae y evalúa los enlaces de un SMS mediante señales locales de riesgo. '
+                  'No se evalúa el contenido del mensaje ni se garantiza la seguridad de los enlaces.',
                 ),
                 const SizedBox(height: 20),
                 TextField(
@@ -122,20 +123,19 @@ class _SmishingScreenState extends State<SmishingScreen> {
                         },
                   child: const Text('Analizar enlaces'),
                 ),
-                if (loading) ...[
+                if (state is SmishingLoading) ...[
                   const SizedBox(height: 24),
-                  const Center(child: CircularProgressIndicator()),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Procesando enlaces...',
-                    textAlign: TextAlign.center,
-                  ),
+                  AnalysisProgressView(progress: state.progress),
                 ],
                 if (state is SmishingError) ...[
                   const SizedBox(height: 20),
                   Text(
                     state.errorMessage,
                     style: const TextStyle(color: AppColors.error),
+                  ),
+                  AnalysisProgressView(
+                    progress: state.progress,
+                    running: false,
                   ),
                 ],
                 if (state is SmishingSuccess) ...[
@@ -173,8 +173,8 @@ class _SmishingScreenState extends State<SmishingScreen> {
                               const Text('Destino HTTP confirmado:'),
                               SelectableText(destination),
                             ],
-                            BrandImpersonationBanner(
-                              impersonation: url.brandImpersonation,
+                            RiskTrafficLight(
+                              evaluation: state.result.riskEvaluations[index],
                             ),
 
                             UrlExpansionDetails(expansion: url.expansion),
@@ -183,6 +183,11 @@ class _SmishingScreenState extends State<SmishingScreen> {
                       ),
                     ),
                 ],
+                if (state is SmishingSuccess)
+                  AnalysisProgressView(
+                    progress: state.progress,
+                    running: false,
+                  ),
                 if (state is! SmishingInitial)
                   TextButton(
                     onPressed: _reset,

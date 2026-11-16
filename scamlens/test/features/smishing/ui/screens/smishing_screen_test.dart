@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:scamlens/shared/analysis_progress/domain/analysis_progress.dart';
+
 import 'package:scamlens/features/home/ui/home_screen.dart';
 import 'package:scamlens/features/auth/domain/entities/profile.dart';
 import 'package:scamlens/features/auth/domain/usescases/get_profile_usecase.dart';
@@ -34,7 +36,10 @@ class FakeExpander implements UrlExpander {
 class ControlledAnalysis implements AnalyzeSmsUseCase {
   final pending = Completer<SmsAnalysisResult>();
   @override
-  Future<SmsAnalysisResult> call(String text) => pending.future;
+  Future<SmsAnalysisResult> call(
+    String text, {
+    AnalysisProgressCallback? onProgress,
+  }) => pending.future;
   @override
   Never get extractor => throw UnimplementedError();
   @override
@@ -100,6 +105,8 @@ void main() {
     await open(tester);
     await analyze(tester, 'Un mensaje sin enlaces');
     expect(find.text('No se encontraron enlaces en este SMS.'), findsOneWidget);
+    await tester.ensureVisible(find.text('Analizar otro SMS'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Analizar otro SMS'));
     await tester.pumpAndSettle();
     expect(

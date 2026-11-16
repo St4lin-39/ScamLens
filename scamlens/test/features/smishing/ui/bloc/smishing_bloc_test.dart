@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:scamlens/shared/analysis_progress/domain/analysis_progress.dart';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:scamlens/shared/url_processing/domain/entities/url_expansion_result.dart';
 import 'package:scamlens/features/smishing/domain/entities/sms_analysis_result.dart';
@@ -15,7 +17,10 @@ class _AnalyzeSmsDouble implements AnalyzeSmsUseCase {
   };
 
   @override
-  Future<SmsAnalysisResult> call(String text) {
+  Future<SmsAnalysisResult> call(
+    String text, {
+    AnalysisProgressCallback? onProgress,
+  }) {
     calls.add(text);
     return respond(text);
   }

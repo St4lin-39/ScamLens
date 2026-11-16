@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scamlens/shared/url_risk/domain/usecases/evaluate_url_risk_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:scamlens/features/smishing/domain/usecases/analyze_sms_usecase.dart';
 import 'package:scamlens/features/smishing/ui/bloc/smishing_bloc.dart';
@@ -239,6 +240,8 @@ class _HomeScreenView extends StatelessWidget {
                 builder: (_) => BlocProvider(
                   create: (_) => ScannerBloc(
                     processUrlUseCase: context.read<ProcessUrlUseCase>(),
+                    evaluateUrlRiskUseCase: context
+                        .read<EvaluateUrlRiskUseCase>(),
                   )..add(CheckCameraPermissionEvent()),
                   child: const ScannerScreen(),
                 ),

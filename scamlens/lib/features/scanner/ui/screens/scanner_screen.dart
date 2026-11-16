@@ -7,7 +7,8 @@ import 'package:scamlens/components/scamlens_header.dart';
 import 'package:scamlens/components/url_expansion_details.dart';
 import 'package:scamlens/features/scanner/ui/bloc/scanner_bloc.dart';
 import 'package:scamlens/theme/app_theme.dart';
-import 'package:scamlens/components/brand_impersonation_banner.dart';
+import 'package:scamlens/components/risk_traffic_light.dart';
+import 'package:scamlens/components/analysis_progress_view.dart';
 
 class ScannerScreen extends StatefulWidget {
   const ScannerScreen({super.key});
@@ -227,18 +228,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
             ],
 
             if (state is ScannerProcessingState) ...[
-              const Center(
-                child: Column(
-                  children: [
-                    CircularProgressIndicator(color: AppColors.accentCyan),
-                    SizedBox(height: 12),
-                    Text(
-                      'Interceptando y desacortando enlace...',
-                      style: TextStyle(color: AppColors.textSecondary),
-                    ),
-                  ],
-                ),
-              ),
+              AnalysisProgressView(progress: state.progress),
             ],
 
             if (state is ScannerSuccessState) ...[
@@ -367,15 +357,14 @@ class _ScannerScreenState extends State<ScannerScreen> {
                       ),
                     ],
                     if (state.isUrl)
-                      BrandImpersonationBanner(
-                        impersonation: state.result.brandImpersonation,
-                      ),
+                      RiskTrafficLight(evaluation: state.riskEvaluation),
                     if (state.isUrl)
                       UrlExpansionDetails(expansion: state.result.expansion),
                   ],
                 ),
               ),
               const SizedBox(height: 16),
+              AnalysisProgressView(progress: state.progress, running: false),
               PrimaryButton(
                 label: 'Escanear otro QR',
                 onPressed: () {
@@ -386,6 +375,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
             if (state is ScannerErrorState) ...[
               ErrorMessage(message: state.errorMessage),
+              AnalysisProgressView(progress: state.progress, running: false),
               const SizedBox(height: 12),
               PrimaryButton(
                 label: 'Reintentar',
