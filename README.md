@@ -1,330 +1,107 @@
-# ScamLens
+# ScamLens — Sprint 2
 
-> Aplicación móvil de ciberseguridad preventiva contra ataques de Phishing, Smishing y QRishing.
+Aplicación de ciberseguridad preventiva para analizar enlaces de mensajes y códigos QR, detectar posibles suplantaciones de marcas y presentar un semáforo de riesgo.
 
----
+## 1. Instalación y ejecución
 
-## Guía rápida de navegación — Sprint 1
-
-Este Sprint implementa el flujo inicial de autenticación y perfil de usuario de ScamLens. Para probarlo, la aplicación puede recorrerse de la siguiente manera:
-
-```text
-Inicio de la aplicación
-        │
-        ▼
-Inicio de Sesión
-        │
-        ├── ¿No tienes una cuenta?
-        │           │
-        │           ▼
-        │       Registro
-        │           │
-        │           ▼
-        │    Resumen del Perfil
-        │
-        └── Usuario registrado
-                    │
-                    ▼
-             Iniciar Sesión
-                    │
-                    ▼
-            Resumen del Perfil
-                    │
-                    ▼
-              Cerrar Sesión
-                    │
-                    ▼
-             Inicio de Sesión
-```
-
-### Flujo recomendado para probar la aplicación
-
-1. Al iniciar ScamLens se mostrará la pantalla de **Inicio de Sesión**.
-2. Si aún no se tiene una cuenta, seleccionar la opción para **registrarse**.
-3. Completar el formulario con:
-   - Nombre.
-   - Apellido.
-   - Correo electrónico.
-   - Contraseña.
-   - Confirmación de contraseña.
-4. Crear la cuenta.
-5. Al finalizar correctamente el registro, la aplicación dirigirá automáticamente al **Resumen del Perfil**.
-6. Verificar que la información mostrada corresponda al usuario registrado.
-7. Seleccionar **Cerrar sesión** para regresar a la pantalla de Inicio de Sesión.
-8. Ingresar nuevamente utilizando el **correo electrónico y contraseña** registrados.
-9. Al autenticarse correctamente, la aplicación recuperará el perfil y mostrará nuevamente el **Resumen del Perfil**.
-
-De esta manera puede comprobarse el flujo completo desarrollado durante el Sprint 1:
-
-**Registro → Perfil → Cerrar sesión → Inicio de sesión → Perfil**
-
----
-
-## Información del Proyecto
-
-- **Asignatura:** Aplicaciones Móviles
-- **Sprint:** Sprint 1 — Autenticación, Registro y Perfil de Usuario
-- **Integrantes:**
-  - Luis Fernando Soto
-  - José David Libreros
-  - Jhony Bolaños García
-
----
-
-## Alcance del Sprint 1
-
-En este primer sprint se implementó el flujo base de identidad y acceso de la aplicación:
-
-1. **Onboarding Mínimo y Registro de Usuario:**
-   - Captura de datos iniciales del usuario (Nombre, Apellido, Correo electrónico y Contraseña con confirmación).
-   - Creación de credenciales mediante **Supabase Auth** (`auth.users`).
-   - Persistencia sincronizada del perfil en la tabla `public.user` en PostgreSQL mediante el repositorio de perfiles.
-
-2. **Inicio de Sesión (Login):**
-   - Validación de credenciales mediante correo electrónico y contraseña.
-   - Manejo de estados de carga (`loading`), éxito (`success`) y fallo (`failure`) con mensajes de error visuales.
-   - Recuperación del perfil asociado al usuario autenticado.
-
-3. **Pantalla de Resumen del Perfil (Home / Profile Summary):**
-   - Presentación de los datos asociados al usuario autenticado.
-   - Visualización de la información del perfil dentro de la interfaz de ScamLens.
-   - Cierre de sesión seguro (`SignOutUseCase`) y redirección a la pantalla de acceso.
-
----
-
-## Arquitectura del Software
-
-El proyecto implementa **Clean Architecture** estructurada por capas y características (*feature-based*), buscando mantener separadas las reglas de negocio, el acceso a datos y la interfaz de usuario.
-
-```text
-lib/
-├── components/                  # Widgets visuales reutilizables
-│   ├── error_message.dart       # Presentación de mensajes de error
-│   ├── primary_button.dart      # Botón principal reutilizable
-│   ├── profile_field.dart       # Presentación de atributos del perfil
-│   └── scamlens_header.dart     # Cabecera visual de ScamLens
-│
-├── features/
-│   ├── auth/                    # Autenticación y perfil
-│   │   ├── domain/              # Reglas de negocio independientes
-│   │   │   ├── entities/        # Entidades del dominio (AuthUser, Profile)
-│   │   │   ├── repositories/    # Contratos de repositorios
-│   │   │   └── usescases/       # Casos de uso (Login, Register, SignOut)
-│   │   │
-│   │   └── data/                # Implementación técnica
-│   │       ├── datasources/     # Comunicación con Supabase
-│   │       ├── models/          # Transformación de datos
-│   │       └── repositories/    # Implementaciones de repositorios
-│   │
-│   ├── login/                   # Módulo de Inicio de Sesión
-│   │   └── ui/
-│   │       ├── bloc/            # Estado y eventos del Login
-│   │       └── screens/         # Interfaz de Inicio de Sesión
-│   │
-│   ├── register/                # Módulo de Registro
-│   │   └── ui/
-│   │       ├── bloc/            # Estado y eventos del Registro
-│   │       └── screens/         # Interfaz de Registro
-│   │
-│   └── home/                    # Resumen del Perfil
-│       └── ui/
-│           ├── bloc/            # Gestión del estado del perfil
-│           └── home_screen.dart # Pantalla principal del usuario
-│
-├── theme/
-│   └── app_theme.dart           # Paleta de colores y estilos
-│
-└── main.dart                    # Inicialización y composición de dependencias
-```
-
-### Gestión de Estado (BLoC Pattern)
-
-Se utilizó la librería `flutter_bloc` para separar la lógica de presentación de las interfaces:
-
-- **`LoginBloc`:** Gestiona el envío de credenciales, los estados de carga, éxito y error durante el inicio de sesión.
-- **`RegisterBloc`:** Gestiona el formulario de registro y la creación del usuario y su perfil.
-- **`ProfileBloc`:** Gestiona el estado relacionado con la pantalla de perfil.
-- **Inyección de dependencias:** Los repositorios, casos de uso y BLoCs son construidos e inyectados desde el punto de entrada de la aplicación.
-
-### Flujo de autenticación
-
-El inicio de sesión mantiene separada la autenticación del perfil de la aplicación:
-
-```text
-LoginScreen
-     │
-     ▼
-LoginBloc
-     │
-     ▼
-LoginUseCase
-     │
-     ├── AuthRepository.signIn()
-     │          │
-     │          ▼
-     │       AuthUser
-     │
-     └── ProfileRepository.getProfile(id)
-                │
-                ▼
-             Profile
-                │
-                ▼
-            HomeScreen
-```
-
-Durante el registro, primero se crea la identidad de autenticación y posteriormente el perfil asociado:
-
-```text
-RegisterScreen
-      │
-      ▼
-RegisterBloc
-      │
-      ▼
-RegisterUseCase
-      │
-      ├── AuthRepository.signUp()
-      │          │
-      │          ▼
-      │       AuthUser
-      │
-      └── ProfileRepository.createProfile()
-                 │
-                 ▼
-              Profile
-                 │
-                 ▼
-             HomeScreen
-```
-
----
-
-## Modelo de Base de Datos (Supabase / PostgreSQL)
-
-Las estructuras correspondientes al Sprint 1 se encuentran versionadas bajo la carpeta `supabase/migrations/`.
-
-### 1. Tabla `public.user` — Perfil
-
-Almacena los datos del perfil de los usuarios registrados y se encuentra vinculada con `auth.users`.
-
-- `id` — UUID, Primary Key y referencia a `auth.users(id)`.
-- `name` — VARCHAR(255), NOT NULL.
-- `last_name` — VARCHAR(255), NOT NULL.
-- `email` — VARCHAR(255), UNIQUE, NOT NULL.
-- `active` — BOOLEAN, DEFAULT TRUE.
-- `created_in` — TIMESTAMP WITH TIME ZONE, NOT NULL.
-
-### 2. Tabla `public.device` — Dispositivos
-
-Estructura destinada al registro de dispositivos vinculados a los usuarios:
-
-- `id` — UUID, Primary Key.
-- `user_id` — UUID, referencia a `public.user(id)`.
-- `uuid_device` — VARCHAR(255), UNIQUE, NOT NULL.
-- `model_device` — VARCHAR(255), NOT NULL.
-- `operating_system` — VARCHAR(255), NOT NULL.
-- `version_os` — VARCHAR(255), NOT NULL.
-- `token_push` — TEXT.
-- `last_access` — TIMESTAMP WITH TIME ZONE, NOT NULL.
-
-### 3. Seguridad a nivel de filas (Row Level Security — RLS)
-
-La base de datos utiliza políticas **Row Level Security (RLS)** para restringir el acceso a la información de acuerdo con el usuario autenticado.
-
-En `public.user`, las políticas permiten que cada usuario trabaje únicamente con el perfil asociado a su propia identidad de autenticación utilizando `auth.uid()`.
-
----
-
-## Requisitos y Ejecución Local
-
-### Prerrequisitos
-
-- Flutter SDK.
-- Dart SDK.
-- Google Chrome para ejecución web, o un dispositivo/emulador Android correctamente configurado.
-- Git para clonar el repositorio.
-
-### Pasos para ejecutar
-
-1. **Clonar el repositorio:**
+**Requisitos:** Git, Flutter SDK, Google Chrome, conexión a Internet y acceso a la configuración de Supabase del proyecto.
 
 ```bash
-git clone <url-del-repositorio>
-```
-
-2. **Ingresar al proyecto Flutter:**
-
-```bash
-cd ScamLens/scamlens
-```
-
-3. **Instalar las dependencias:**
-
-```bash
+git clone https://github.com/St4lin-39/ScamLens.git
+cd ScamLens
+git checkout sprint2
+cd scamlens
 flutter pub get
-```
-
-4. **Verificar el proyecto:**
-
-```bash
-flutter analyze
-```
-
-5. **Consultar los dispositivos disponibles:**
-
-```bash
-flutter devices
-```
-
-6. **Ejecutar en Google Chrome:**
-
-```bash
 flutter run -d chrome
 ```
 
-7. **O ejecutar en un dispositivo/emulador Android:**
+Para abrir el proyecto en un editor, abre la carpeta `ScamLens/scamlens` en VS Code o Android Studio.
 
-```bash
-flutter run -d <device_id>
-```
+La demostración de este sprint se realiza en **Chrome**. La ejecución y la expansión HTTP en Android no se han validado manualmente para esta entrega.
 
-Una vez iniciada la aplicación, seguir la **Guía rápida de navegación — Sprint 1** ubicada al comienzo de este documento.
+## 2. Registro e inicio de sesión
 
----
+1. Al abrir la aplicación, inicia sesión con una cuenta existente o selecciona la opción de registro.
+2. Para registrarte, ingresa nombre, apellido, correo electrónico, contraseña y confirmación. La contraseña debe cumplir las condiciones indicadas por el formulario.
+3. Accede con el correo y la contraseña registrados. **Se requiere una cuenta para utilizar los analizadores.**
+4. Desde la pantalla principal puedes acceder a la lectura de QR, la sección de **Mensajes** y el perfil; también puedes cerrar sesión.
 
-## Identidad Visual
+## 3. Analizar enlaces de mensajes
 
-El diseño de ScamLens utiliza una interfaz oscura orientada a la temática de ciberseguridad:
+1. En la pantalla principal, entra a **Mensajes**.
+2. Pega un SMS con una o varias direcciones web y ejecuta el análisis.
+3. Revisa los enlaces extraídos, la URL normalizada, el semáforo (**verde, amarillo o rojo**), las evidencias y las etapas del procesamiento.
 
-- **Background principal:** Azul nocturno (`#080D1A`).
-- **Superficie de tarjetas:** Azul marino profundo (`#111827`).
-- **Bordes:** `#1E293B`.
-- **Acentos:** Cian (`#00D2FF`) y verde menta (`#00E5A3`).
-- **Estados de riesgo:** Verde (`#10B981`), amarillo (`#F59E0B`) y rojo (`#EF4444`).
+### Dominios oficiales del catálogo de Supabase
 
----
+Estos son los 12 dominios registrados como marcas oficiales y activos en el catálogo:
 
-## Sprint 1
+| Marca | Dominio oficial |
+|---|---|
+| Mercado Libre Colombia | `mercadolibre.com.co` |
+| DIAN | `dian.gov.co` |
+| Microsoft | `microsoft.com` |
+| Nequi | `nequi.com.co` |
+| Servientrega | `servientrega.com` |
+| Banco de Bogotá | `bancodebogota.com` |
+| Davivienda | `davivienda.com` |
+| Bancolombia | `bancolombia.com` |
+| Inter Rapidísimo | `interrapidisimo.com` |
+| BBVA Colombia | `bbva.com.co` |
+| Google | `google.com` |
+| DaviPlata | `daviplata.com` |
 
-El Sprint 1 establece el flujo inicial de identidad de ScamLens, permitiendo:
+### Mensajes para probar el semáforo
 
-- Crear una cuenta.
-- Almacenar el perfil asociado.
-- Iniciar sesión con credenciales existentes.
-- Recuperar y visualizar la información del perfil.
-- Cerrar la sesión activa.
-
-El flujo funcional entregado es:
+** Verde — Dominio oficial reconocido**
 
 ```text
-Registro
-   ↓
-Perfil
-   ↓
-Cerrar sesión
-   ↓
-Inicio de sesión
-   ↓
-Perfil
+Consulta los servicios de Microsoft en https://www.microsoft.com
 ```
+
+```text
+Consulta información oficial de la DIAN en https://www.dian.gov.co
+```
+
+** Amarillo — Dominio no reconocido en el catálogo**
+
+```text
+Consulta este sitio de ejemplo: https://ejemplo-desconocido-2026.com
+```
+
+** Rojo — Posible suplantación de una marca**
+
+```text
+Verifica tu cuenta en https://goog1e.com
+```
+
+```text
+Consulta tu cuenta en https://micros0ft.com
+```
+
+Los ejemplos rojos son cadenas de prueba: no abras esos dominios.
+
+La clasificación depende del catálogo vigente y de las evidencias obtenidas. Un dominio oficial puede mostrarse en verde si no hay señales adicionales de riesgo ni incertidumbre crítica. **El verde no garantiza seguridad absoluta.**
+
+## 4. Escanear códigos QR
+
+1. Abre [QR Code Monkey](https://www.qrcode-monkey.com/es/) y selecciona **URL**.
+2. Introduce una de las direcciones de la tabla, crea un **QR estático** y descárgalo o muéstralo en otra pantalla.
+3. En ScamLens, abre la opción de escaneo QR y utiliza la cámara para leerlo.
+4. Comprueba la URL detectada, el semáforo, los detalles de la evaluación y las etapas del análisis.
+
+| Prueba | URL para generar el QR | Resultado esperado |
+|---|---|---|
+|  Verde | `https://www.microsoft.com` | Verde si el catálogo está vigente y no hay señales de riesgo |
+|  Amarillo | `https://ejemplo-desconocido-2026.com` | Amarillo por dominio desconocido |
+|  Rojo | `https://goog1e.com` | Rojo si se detecta la suplantación de Google |
+
+No es necesario abrir los enlaces para analizarlos.
+
+## 5. Alcance y limitaciones
+
+El Sprint 2 incluye lectura de QR, extracción de enlaces de mensajes, normalización de URLs, intento de expansión de acortadores, detección de suplantación de marcas mediante Levenshtein, heurísticas locales, semáforo de riesgo y seguimiento de las etapas del análisis.
+
+El análisis es **preventivo y basado en evidencias locales**: no inspecciona el contenido de los sitios ni consulta servicios externos de reputación.
+
+La expansión HTTP segura de acortadores no está disponible en Chrome. La incorporación de verificaciones externas sería una mejora adicional; los flujos comprometidos para este sprint están implementados.
