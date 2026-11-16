@@ -158,10 +158,11 @@ void main() {
     test('classifies ${entry.key} as isUrl=${entry.value}', () async {
       expect(bloc.state, isA<ScannerInitialState>());
       final result = await scan('  ${entry.key}  ') as ScannerSuccessState;
-      expect(states, [
-        isA<ScannerProcessingState>(),
-        isA<ScannerSuccessState>(),
-      ]);
+      expect(states.last, isA<ScannerSuccessState>());
+      expect(
+        states.take(states.length - 1),
+        everyElement(isA<ScannerProcessingState>()),
+      );
       expect(result.contentRaw, entry.key);
       expect(result.isUrl, entry.value);
       expect(result.wasShortened, isFalse);
@@ -237,10 +238,11 @@ void main() {
       final result = await scan(' https://bit.ly/a ') as ScannerSuccessState;
       expect(result.normalizedUrl, 'https://normalized.example/');
       expect(result.wasShortened, isTrue);
-      expect(states, [
-        isA<ScannerProcessingState>(),
-        isA<ScannerSuccessState>(),
-      ]);
+      expect(states.last, isA<ScannerSuccessState>());
+      expect(
+        states.take(states.length - 1),
+        everyElement(isA<ScannerProcessingState>()),
+      );
     },
   );
 
@@ -253,7 +255,11 @@ void main() {
     expect(result.wasShortened, isTrue);
     await Future<void>.delayed(Duration.zero);
     expect(bloc.state, same(result));
-    expect(states, [isA<ScannerProcessingState>(), isA<ScannerSuccessState>()]);
+    expect(states.last, isA<ScannerSuccessState>());
+    expect(
+      states.take(states.length - 1),
+      everyElement(isA<ScannerProcessingState>()),
+    );
   });
 
   test('duplicate events are ignored while processing and after success; reset allows another scan', () async {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scamlens/shared/analysis_progress/domain/analysis_progress.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -50,7 +51,10 @@ class _Processor extends ProcessUrlUseCase {
   _Processor(this.result)
     : super(normalizer: UrlNormalizer(), expander: _UnusedExpander());
   @override
-  Future<UrlProcessingResult> call(String content) async => result;
+  Future<UrlProcessingResult> call(
+    String content, {
+    AnalysisProgressCallback? onProgress,
+  }) async => result;
 }
 
 void main() {

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:scamlens/shared/analysis_progress/domain/analysis_progress.dart';
 import 'package:scamlens/shared/url_processing/domain/entities/url_expansion_result.dart';
 import 'package:scamlens/features/smishing/domain/services/sms_url_extractor.dart';
 import 'package:scamlens/features/smishing/domain/usecases/analyze_sms_usecase.dart';
@@ -33,10 +34,13 @@ class _ControlledProcessor extends ProcessUrlUseCase {
     : super(normalizer: UrlNormalizer(), expander: _ControlledExpander());
 
   @override
-  Future<UrlProcessingResult> call(String content) {
+  Future<UrlProcessingResult> call(
+    String content, {
+    AnalysisProgressCallback? onProgress,
+  }) {
     calls.add(content);
     if (respond != null) return respond!(content);
-    return super.call(content);
+    return super.call(content, onProgress: onProgress);
   }
 }
 

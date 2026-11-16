@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:scamlens/shared/url_risk/domain/usecases/evaluate_url_risk_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:scamlens/features/smishing/domain/services/sms_url_extractor.dart';
 import 'package:scamlens/features/smishing/domain/usecases/analyze_sms_usecase.dart';
@@ -110,15 +111,19 @@ class MyApp extends StatelessWidget {
           create: (context) => ProcessUrlUseCase(
             normalizer: context.read<UrlNormalizer>(),
             expander: context.read<UrlExpander>(),
-            detectBrandImpersonationUseCase:
-                context.read<DetectBrandImpersonationUseCase>(),
+            detectBrandImpersonationUseCase: context
+                .read<DetectBrandImpersonationUseCase>(),
           ),
         ),
         RepositoryProvider<SmsUrlExtractor>(create: (_) => SmsUrlExtractor()),
+        RepositoryProvider<EvaluateUrlRiskUseCase>(
+          create: (_) => EvaluateUrlRiskUseCase(),
+        ),
         RepositoryProvider<AnalyzeSmsUseCase>(
           create: (context) => AnalyzeSmsUseCase(
             extractor: context.read<SmsUrlExtractor>(),
             processUrlUseCase: context.read<ProcessUrlUseCase>(),
+            evaluateUrlRiskUseCase: context.read<EvaluateUrlRiskUseCase>(),
           ),
         ),
         RepositoryProvider<GetProfileUseCase>.value(value: getProfileUseCase),
