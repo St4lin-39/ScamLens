@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import '../entities/brand_impersonation_result.dart';
 import '../entities/official_brand.dart';
+import '../entities/official_brand_catalog.dart';
 import '../repositories/official_brand_repository.dart';
 import '../services/levenshtein_calculator.dart';
 import '../services/registrable_domain_extractor.dart';
@@ -27,8 +28,16 @@ class DetectBrandImpersonationUseCase {
       );
     }
 
-    final brands = await repository.getActiveBrands();
-    final activeBrands = brands.where((b) => b.active).toList(growable: false);
+    final source = repository;
+    final catalog = source is OfficialBrandCatalogReader
+        ? await (source as OfficialBrandCatalogReader).getCatalogSnapshot()
+        : OfficialBrandCatalog(
+            brands: await source.getActiveBrands(),
+            status: BrandCatalogStatus.unknown,
+          );
+    final activeBrands = List<OfficialBrand>.unmodifiable(
+      catalog.brands.where((b) => b.active),
+    );
 
     // 1. Verificar primero si pertenece legitimamente a una marca oficial
     for (final brand in activeBrands) {
@@ -36,6 +45,8 @@ class DetectBrandImpersonationUseCase {
       if (official != null && evaluated.rootDomain == official.rootDomain) {
         return BrandImpersonationResult(
           status: BrandMatchStatus.officialVerified,
+          catalogStatus: catalog.status,
+          evaluatedBrands: activeBrands,
           evaluatedRootDomain: evaluated.rootDomain,
           matchedBrand: brand,
           editDistance: 0,
@@ -96,6 +107,8 @@ class DetectBrandImpersonationUseCase {
 
       return BrandImpersonationResult(
         status: BrandMatchStatus.suspectedImpersonation,
+        catalogStatus: catalog.status,
+        evaluatedBrands: activeBrands,
         evaluatedRootDomain: evaluated.rootDomain,
         matchedBrand: closestBrand,
         editDistance: bestDistance,
@@ -115,6 +128,8 @@ class DetectBrandImpersonationUseCase {
 
     return BrandImpersonationResult(
       status: BrandMatchStatus.noMatch,
+      catalogStatus: catalog.status,
+      evaluatedBrands: activeBrands,
       evaluatedRootDomain: evaluated.rootDomain,
     );
   }
