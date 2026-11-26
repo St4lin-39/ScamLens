@@ -40,7 +40,7 @@ class ScamLensHeader extends StatelessWidget {
                 ),
               ),
               Text(
-                'v1.1 • Escudo anti-phishing',
+                'v1.1 • Anti-phishing shield',
                 style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
               ),
             ],
@@ -62,7 +62,7 @@ class ScamLensHeader extends StatelessWidget {
                 Icon(Icons.circle, size: 8, color: AppColors.safeGreen),
                 SizedBox(width: 6),
                 Text(
-                  'PROTEGIDO',
+                  'PROTECTED',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,

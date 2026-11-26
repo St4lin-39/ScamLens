@@ -30,38 +30,38 @@ class LocalUrlRiskAnalyzer {
     if (uri.scheme == 'http') {
       add(
         RiskEvidenceId.explicitHttp,
-        'El enlace utiliza HTTP sin cifrado HTTPS.',
+        'The link uses unencrypted HTTP instead of HTTPS.',
       );
     }
     if (host.contains(':') || RegExp(r'^[0-9.]+$').hasMatch(host)) {
       add(
         RiskEvidenceId.ipHost,
-        'El host es una dirección IP, no un dominio de marca.',
+        'The host is an IP address rather than a brand domain.',
       );
     }
     if (uri.userInfo.isNotEmpty) {
       add(
         RiskEvidenceId.embeddedCredentials,
-        'La URL contiene credenciales antes del host; pueden confundir sobre el destino.',
+        'The URL contains embedded credentials before the host, which can obscure the destination.',
       );
     }
     if (uri.hasPort && uri.port != 80 && uri.port != 443) {
       add(
         RiskEvidenceId.unusualPort,
-        'El enlace utiliza un puerto no habitual.',
+        'The link uses a non-standard port.',
       );
     }
     if (url.length > 2048) {
       add(
         RiskEvidenceId.longUrl,
-        'La URL supera 2048 caracteres; es un indicio débil.',
+        'The URL exceeds 2048 characters, which is a weak risk indicator.',
       );
     }
     if (host.split('.').any((label) => label.startsWith('xn--')) ||
         host.codeUnits.any((unit) => unit > 127)) {
       add(
         RiskEvidenceId.internationalizedHost,
-        'El host internacionalizado requiere comprobaciones adicionales de identidad.',
+        'Internationalized hostnames require additional identity verification.',
       );
     }
 
@@ -73,7 +73,7 @@ class LocalUrlRiskAnalyzer {
     if (subdomains.length >= 4) {
       add(
         RiskEvidenceId.manySubdomains,
-        'El host contiene cuatro o más subdominios; es un indicio débil.',
+        'The host contains four or more subdomains, which is a weak risk indicator.',
       );
     }
     for (final brand in brands.where((brand) => brand.active)) {
@@ -87,16 +87,16 @@ class LocalUrlRiskAnalyzer {
       if (subdomainText.contains(officialSequence)) {
         add(
           RiskEvidenceId.deceptiveBrandSubdomain,
-          'El dominio oficial ${official.rootDomain} aparece como subdominio '
-          'de otro dominio (${extracted.rootDomain}).',
+          'The official domain ${official.rootDomain} appears as a subdomain '
+          'of another domain (${extracted.rootDomain}).',
           high: true,
         );
       } else if (official.brandLabel.length >= 5 &&
           subdomains.contains(official.brandLabel)) {
         add(
           RiskEvidenceId.brandLabelInSubdomain,
-          'El nombre de ${brand.entityName} aparece en un subdominio ajeno; '
-          'puede tener un uso legítimo y requiere precaución.',
+          'The name of ${brand.entityName} appears in a foreign subdomain; '
+          'it may be legitimate but requires caution.',
         );
       }
     }

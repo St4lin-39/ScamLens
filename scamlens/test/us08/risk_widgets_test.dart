@@ -90,15 +90,15 @@ void main() {
         ),
       );
       for (final status in [
-        'Completada',
-        'Fallida',
-        'Omitida',
-        'En curso',
-        'No disponible',
+        'Completed',
+        'Failed',
+        'Skipped',
+        'In progress',
+        'Unavailable',
       ]) {
         expect(find.textContaining('· $status'), findsOneWidget);
       }
-      expect(find.textContaining('Tiempo agotado'), findsOneWidget);
+      expect(find.textContaining('Timed out'), findsOneWidget);
       expect(find.byType(LinearProgressIndicator), findsNothing);
       expect(find.byType(CircularProgressIndicator), findsNothing);
       expect(tester.takeException(), isNull);
@@ -129,7 +129,7 @@ void main() {
       bloc.add(QRCodeScannedEvent(rawValue: 'https://bit.ly/a'));
       await tester.pumpAndSettle();
       expect(
-        find.textContaining('Comprobando destino del acortador · En curso'),
+        find.textContaining('Checking shortener destination · In progress'),
         findsOneWidget,
       );
       expect(find.byType(RiskTrafficLight), findsNothing);
@@ -151,18 +151,16 @@ void main() {
             .status,
         AnalysisStageStatus.unavailable,
       );
-      await tester.ensureVisible(find.text('Etapas del análisis'));
-      await tester.tap(find.text('Etapas del análisis'));
+      await tester.ensureVisible(find.text('Analysis stages'));
+      await tester.tap(find.text('Analysis stages'));
       await tester.pumpAndSettle();
       expect(
-        find.textContaining(
-          'Comprobando destino del acortador · No disponible',
-        ),
+        find.textContaining('Checking shortener destination · Unavailable'),
         findsOneWidget,
       );
       expect(
         find.text(
-          'La comprobación del acortador no está disponible en esta plataforma.',
+          'Shortener verification is unavailable on this platform.',
         ),
         findsOneWidget,
       );
@@ -190,11 +188,11 @@ void main() {
         find.byType(TextField),
         'https://bancolombia.com https://bit.ly/a https://bancolombia.com',
       );
-      await tester.tap(find.text('Analizar enlaces'));
+      await tester.tap(find.text('Analyze links'));
       await tester.pumpAndSettle();
-      expect(find.text('Enlace único 2 de 2'), findsOneWidget);
+      expect(find.text('Unique link 2 of 2'), findsOneWidget);
       expect(
-        find.textContaining('Comprobando destino del acortador · En curso'),
+        find.textContaining('Checking shortener destination · In progress'),
         findsOneWidget,
       );
       pending.complete(UrlExpansionResult(status: UrlExpansionStatus.timeout));
@@ -208,26 +206,26 @@ void main() {
       expect(fixture.processor.calls, 2);
       expect(fixture.expander.calls, 1);
       expect(fixture.evaluator.inputs.length, 2);
-      expect(find.text('Análisis en curso'), findsNothing);
+      expect(find.text('Analysis in progress'), findsNothing);
       expect(tester.takeException(), isNull);
     },
   );
   for (final (url, title, icon, color) in [
     (
       'https://bancolombia.com',
-      'Verde · Dominio oficial reconocido',
+      'Green · Recognized official domain',
       Icons.verified_user_outlined,
       AppColors.safeGreen,
     ),
     (
       'https://independent-shop.net',
-      'Amarillo · Precaución',
+      'Yellow · Caution',
       Icons.warning_amber_rounded,
       AppColors.warningYellow,
     ),
     (
       'https://bancol0mbia.com',
-      'Rojo · Posible suplantación',
+      'Red · Possible impersonation',
       Icons.gpp_bad_outlined,
       AppColors.error,
     ),
@@ -251,18 +249,18 @@ void main() {
         expect(find.text(title), findsOneWidget);
         expect(tester.widget<Icon>(find.byIcon(icon)).color, color);
         expect(find.text(risk.summary), findsOneWidget);
-        expect(find.textContaining('Enlace observado:'), findsNothing);
-        await tester.tap(find.text('Detalles de la evaluación'));
+        expect(find.textContaining('Observed link:'), findsNothing);
+        await tester.tap(find.text('Evaluation details'));
         await tester.pumpAndSettle();
         expect(
           find.textContaining(risk.evidences.first.justification),
           findsOneWidget,
         );
         expect(
-          find.textContaining('Sin servicios de reputación'),
+          find.textContaining('No reputation services'),
           findsOneWidget,
         );
-        expect(find.text('URL evaluada: $url'), findsOneWidget);
+        expect(find.text('Evaluated URL: $url'), findsOneWidget);
         expect(tester.takeException(), isNull);
       },
     );
@@ -289,11 +287,11 @@ void main() {
         tester.widget<OutlinedButton>(find.byType(OutlinedButton)).onPressed,
         isNull,
       );
-      await tester.tap(find.text('Abrir enlace'));
+      await tester.tap(find.text('Open link'));
       expect(opened, isEmpty);
-      await tester.tap(find.text('Detalles de la evaluación'));
+      await tester.tap(find.text('Evaluation details'));
       await tester.pumpAndSettle();
-      expect(find.textContaining('distancia de edicion'), findsOneWidget);
+      expect(find.textContaining('edit distance'), findsOneWidget);
       expect(opened, isEmpty);
     },
   );
@@ -313,10 +311,10 @@ void main() {
         ),
       );
       expect(
-        find.textContaining('No garantiza seguridad absoluta'),
+        find.textContaining('Does not guarantee absolute safety'),
         findsOneWidget,
       );
-      await tester.tap(find.text('Abrir enlace'));
+      await tester.tap(find.text('Open link'));
       expect(opened, [url]);
     },
   );
@@ -339,17 +337,17 @@ void main() {
       ),
     );
     expect(
-      find.text('Evaluación parcial: información insuficiente'),
+      find.text('Partial evaluation: insufficient information'),
       findsOneWidget,
     );
     expect(
       tester.widget<OutlinedButton>(find.byType(OutlinedButton)).onPressed,
       isNull,
     );
-    await tester.tap(find.text('Detalles de la evaluación'));
+    await tester.tap(find.text('Evaluation details'));
     await tester.pumpAndSettle();
     expect(
-      find.textContaining('no tiene un destino confirmado'),
+      find.textContaining('has no confirmed destination'),
       findsOneWidget,
     );
     expect(find.textContaining('unconfirmed.example'), findsNothing);
@@ -387,17 +385,17 @@ void main() {
       );
       expect(light.evaluation.level, level);
       expect(light.onOpenUrl, isNull);
-      expect(find.text('Abrir enlace'), findsNothing);
+      expect(find.text('Open link'), findsNothing);
       if (level == RiskLevel.red) {
         expect(
-          find.text('Apertura directa bloqueada por posible suplantación.'),
+          find.text('Direct opening blocked due to possible impersonation.'),
           findsOneWidget,
         );
       }
-      await tester.ensureVisible(find.text('Detalles de la evaluación'));
-      await tester.tap(find.text('Detalles de la evaluación'));
+      await tester.ensureVisible(find.text('Evaluation details'));
+      await tester.tap(find.text('Evaluation details'));
       await tester.pumpAndSettle();
-      expect(find.textContaining('Enlace observado:'), findsWidgets);
+      expect(find.textContaining('Observed link:'), findsWidgets);
       expect(fixture.processor.calls, 1);
       expect(tester.takeException(), isNull);
     });
@@ -421,7 +419,7 @@ void main() {
         'https://bancolombia.com '
         'https://independent-shop.net https://bancol0mbia.com https://bit.ly/a',
       );
-      await tester.tap(find.text('Analizar enlaces'));
+      await tester.tap(find.text('Analyze links'));
       await tester.pumpAndSettle();
       final lights = tester
           .widgetList<RiskTrafficLight>(find.byType(RiskTrafficLight))
@@ -433,22 +431,22 @@ void main() {
         RiskLevel.yellow,
       ]);
       expect(lights.last.evaluation.hasUncertainty, isTrue);
-      expect(find.text('Abrir enlace'), findsNothing);
+      expect(find.text('Open link'), findsNothing);
       expect(
-        find.text('Apertura directa bloqueada por posible suplantación.'),
+        find.text('Direct opening blocked due to possible impersonation.'),
         findsOneWidget,
       );
       for (var i = 0; i < lights.length; i++) {
         final details = find.descendant(
           of: find.byType(RiskTrafficLight).at(i),
-          matching: find.text('Detalles de la evaluación'),
+          matching: find.text('Evaluation details'),
         );
         await tester.ensureVisible(details);
         await tester.tap(details);
         await tester.pumpAndSettle();
         final evidence = find.descendant(
           of: find.byType(RiskTrafficLight).at(i),
-          matching: find.textContaining('Enlace observado:'),
+          matching: find.textContaining('Observed link:'),
         );
         expect(evidence, findsWidgets);
       }

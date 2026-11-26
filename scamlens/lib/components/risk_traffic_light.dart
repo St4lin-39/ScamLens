@@ -19,24 +19,24 @@ class RiskTrafficLight extends StatelessWidget {
       RiskLevel.green => (
         AppColors.safeGreen,
         Icons.verified_user_outlined,
-        'Verde · Dominio oficial reconocido',
+        'Green · Recognized official domain',
       ),
       RiskLevel.yellow => (
         AppColors.warningYellow,
         Icons.warning_amber_rounded,
-        'Amarillo · Precaución',
+        'Yellow · Caution',
       ),
       RiskLevel.red => (
         AppColors.error,
         Icons.gpp_bad_outlined,
-        'Rojo · Posible suplantación',
+        'Red · Possible impersonation',
       ),
     };
     final coverage = switch (evaluation.completeness) {
-      RiskAnalysisCompleteness.complete => 'Comprobaciones locales completas',
+      RiskAnalysisCompleteness.complete => 'Complete local checks',
       RiskAnalysisCompleteness.partial =>
-        'Evaluación parcial: información insuficiente',
-      RiskAnalysisCompleteness.notApplicable => 'Evaluación no aplicable',
+        'Partial evaluation: insufficient information',
+      RiskAnalysisCompleteness.notApplicable => 'Evaluation not applicable',
     };
     final canOpen =
         evaluation.level != RiskLevel.red &&
@@ -76,7 +76,7 @@ class RiskTrafficLight extends StatelessWidget {
             if (evaluation.level == RiskLevel.red) ...[
               const SizedBox(height: 6),
               const Text(
-                'Apertura directa bloqueada por posible suplantación.',
+                'Direct opening blocked due to possible impersonation.',
               ),
             ],
             if (onOpenUrl != null)
@@ -85,37 +85,37 @@ class RiskTrafficLight extends StatelessWidget {
                     ? () => onOpenUrl!(evaluation.evaluatedUrl!)
                     : null,
                 icon: const Icon(Icons.open_in_new),
-                label: const Text('Abrir enlace'),
+                label: const Text('Open link'),
               ),
             ExpansionTile(
               key: ObjectKey(evaluation),
               tilePadding: EdgeInsets.zero,
               childrenPadding: EdgeInsets.zero,
               expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
-              title: const Text('Detalles de la evaluación'),
+              title: const Text('Evaluation details'),
               children: [
                 Text(coverage),
                 if (evaluation.evaluatedUrl case final url?) ...[
                   const SizedBox(height: 8),
-                  Text('URL evaluada: $url'),
+                  Text('Evaluated URL: $url'),
                 ],
                 for (final evidence in evaluation.evidences)
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
                     child: Text(
-                      '${evidence.justification}\nEnlace observado: ${evidence.subject}',
+                      '${evidence.justification}\nObserved link: ${evidence.subject}',
                     ),
                   ),
                 const SizedBox(height: 12),
                 const Text(
-                  'Alcance: heurísticas locales y catálogo de marcas. '
-                  'Sin servicios de reputación ni inspección del contenido del sitio. '
-                  'Un dominio oficial también puede estar comprometido.',
+                  'Scope: local heuristics and brand catalog. '
+                  'No reputation services or site content inspection. '
+                  'An official domain may also be compromised.',
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'HTTPS y un destino confirmado por HTTP no garantizan seguridad. '
-                  'Un dominio desconocido tampoco implica que sea malicioso.',
+                  'HTTPS and an HTTP-confirmed destination do not guarantee safety. '
+                  'An unknown domain does not imply maliciousness either.',
                 ),
               ],
             ),

@@ -14,26 +14,24 @@ class UrlExpansionDetails extends StatelessWidget {
     if (result == null) return const SizedBox.shrink();
     final message = switch (result.status) {
       UrlExpansionStatus.resolved || UrlExpansionStatus.notAttempted => null,
-      UrlExpansionStatus.noRedirect => 'No se detectó una redirección HTTP.',
-      UrlExpansionStatus.timeout =>
-        'No fue posible completar la comprobación a tiempo.',
-      UrlExpansionStatus.failed => 'Ocurrió un error al comprobar el enlace.',
+      UrlExpansionStatus.noRedirect => 'No HTTP redirect was detected.',
+      UrlExpansionStatus.timeout => 'Could not complete the check in time.',
+      UrlExpansionStatus.failed => 'An error occurred while checking the link.',
       UrlExpansionStatus.blocked =>
-        'La comprobación se bloqueó por una restricción de seguridad de red.',
+        'The check was blocked by a network security restriction.',
       UrlExpansionStatus.unsupportedPlatform =>
-        'La expansión no está disponible en esta plataforma.',
-      UrlExpansionStatus.cancelled => 'La operación fue cancelada.',
+        'URL expansion is unavailable on this platform.',
+      UrlExpansionStatus.cancelled => 'The operation was cancelled.',
     };
     final stateLabel = switch (result.status) {
-      UrlExpansionStatus.resolved => 'Destino confirmado mediante HTTP',
-      UrlExpansionStatus.noRedirect => 'Sin redirección HTTP',
-      UrlExpansionStatus.timeout => 'Tiempo agotado',
-      UrlExpansionStatus.failed => 'Error de comprobación',
-      UrlExpansionStatus.blocked => 'Bloqueada por política de red',
-      UrlExpansionStatus.unsupportedPlatform =>
-        'No disponible en esta plataforma',
-      UrlExpansionStatus.cancelled => 'Cancelada',
-      UrlExpansionStatus.notAttempted => 'Expansión no solicitada',
+      UrlExpansionStatus.resolved => 'Destination confirmed via HTTP',
+      UrlExpansionStatus.noRedirect => 'No HTTP redirect',
+      UrlExpansionStatus.timeout => 'Timed out',
+      UrlExpansionStatus.failed => 'Check failed',
+      UrlExpansionStatus.blocked => 'Blocked by network policy',
+      UrlExpansionStatus.unsupportedPlatform => 'Unavailable on this platform',
+      UrlExpansionStatus.cancelled => 'Cancelled',
+      UrlExpansionStatus.notAttempted => 'Expansion not requested',
     };
     const detailStyle = TextStyle(color: AppColors.textSecondary, fontSize: 12);
     return Column(
@@ -61,20 +59,20 @@ class UrlExpansionDetails extends StatelessWidget {
           collapsedShape: const Border(),
           iconColor: AppColors.textSecondary,
           collapsedIconColor: AppColors.textSecondary,
-          title: const Text('Detalles del procesamiento', style: detailStyle),
+          title: const Text('Processing details', style: detailStyle),
           children: [
-            Text('Estado: $stateLabel', style: detailStyle),
+            Text('Status: $stateLabel', style: detailStyle),
             if (result.status != UrlExpansionStatus.notAttempted &&
                 result.status != UrlExpansionStatus.unsupportedPlatform)
               Text(
-                'Redirecciones: ${result.redirectCount}',
+                'Redirects: ${result.redirectCount}',
                 style: detailStyle,
               ),
             if (result.lastHttpStatus != null)
-              Text('Código HTTP: ${result.lastHttpStatus}', style: detailStyle),
+              Text('HTTP status: ${result.lastHttpStatus}', style: detailStyle),
             if (result.failureReason != null)
               Text(
-                'Motivo: ${_reason(result.failureReason!)}',
+                'Reason: ${_reason(result.failureReason!)}',
                 style: detailStyle,
               ),
           ],
@@ -84,29 +82,28 @@ class UrlExpansionDetails extends StatelessWidget {
   }
 
   static String _reason(UrlExpansionFailureReason reason) => switch (reason) {
-    UrlExpansionFailureReason.unknown => 'No se conoce el motivo.',
-    UrlExpansionFailureReason.dns =>
-      'No se pudo resolver el nombre del servidor.',
+    UrlExpansionFailureReason.unknown => 'Unknown reason.',
+    UrlExpansionFailureReason.dns => 'Could not resolve the server hostname.',
     UrlExpansionFailureReason.connection =>
-      'No se pudo establecer la conexión.',
-    UrlExpansionFailureReason.tls => 'No se pudo validar la conexión TLS.',
+      'Could not establish a connection.',
+    UrlExpansionFailureReason.tls => 'Could not validate the TLS connection.',
     UrlExpansionFailureReason.httpStatus =>
-      'La respuesta del servidor no permitió completar la comprobación.',
+      'The server response did not allow completing the check.',
     UrlExpansionFailureReason.invalidLocation =>
-      'La respuesta no indicó un destino válido.',
+      'The response did not provide a valid destination.',
     UrlExpansionFailureReason.redirectLoop =>
-      'Se detectó un bucle de redirecciones.',
+      'A redirect loop was detected.',
     UrlExpansionFailureReason.redirectLimit =>
-      'Se alcanzó el límite de redirecciones.',
+      'The redirect limit was reached.',
     UrlExpansionFailureReason.invalidUrl =>
-      'La dirección no tiene un formato admitido.',
+      'The address format is not supported.',
     UrlExpansionFailureReason.unsupportedScheme =>
-      'El protocolo del destino no está admitido.',
+      'The destination protocol is not supported.',
     UrlExpansionFailureReason.forbiddenDestination =>
-      'El destino no está permitido por la política de red.',
+      'The destination is not allowed by network policy.',
     UrlExpansionFailureReason.insecureRedirect =>
-      'Se rechazó un cambio de HTTPS a HTTP.',
+      'An HTTPS to HTTP downgrade was rejected.',
     UrlExpansionFailureReason.securityPolicyUnavailable =>
-      'La plataforma no permite aplicar la política de red.',
+      'This platform cannot enforce the network policy.',
   };
 }

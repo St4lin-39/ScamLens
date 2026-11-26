@@ -165,7 +165,7 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
 
     try {
       if (raw.isEmpty) {
-        emit(ScannerErrorState(errorMessage: 'Código QR vacío o ilegible'));
+        emit(ScannerErrorState(errorMessage: 'Empty or unreadable QR code'));
         return;
       }
 
@@ -219,7 +219,7 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
       if (!_closing && revision == _revision && !emit.isDone) {
         emit(
           ScannerErrorState(
-            errorMessage: 'Error al procesar: $e',
+            errorMessage: 'Processing error: $e',
             progress: job?.snapshot ?? const AnalysisProgressSnapshot.empty(),
           ),
         );

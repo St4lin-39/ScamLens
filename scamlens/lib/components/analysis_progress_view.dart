@@ -13,44 +13,43 @@ class AnalysisProgressView extends StatelessWidget {
   });
 
   static String label(AnalysisStage stage) => switch (stage) {
-    AnalysisStage.extractLinks => 'Extrayendo enlaces del SMS',
-    AnalysisStage.normalizeUrl => 'Reconociendo y normalizando URL',
-    AnalysisStage.expandShortener => 'Comprobando destino del acortador',
-    AnalysisStage.brandCheck => 'Evaluando posible suplantación de marca',
+    AnalysisStage.extractLinks => 'Extracting SMS links',
+    AnalysisStage.normalizeUrl => 'Recognizing and normalizing URL',
+    AnalysisStage.expandShortener => 'Checking shortener destination',
+    AnalysisStage.brandCheck => 'Evaluating possible brand impersonation',
     AnalysisStage.evaluateRisk =>
-      'Aplicando heurísticas locales y calculando riesgo',
-    AnalysisStage.prepareResult => 'Preparando resultado',
+      'Applying local heuristics and calculating risk',
+    AnalysisStage.prepareResult => 'Preparing result',
   };
 
   static String reason(AnalysisProgressReason? reason) => switch (reason) {
-    AnalysisProgressReason.timeout => 'Tiempo agotado',
-    AnalysisProgressReason.blocked => 'Bloqueada por política de seguridad',
-    AnalysisProgressReason.cancelled => 'Operación cancelada',
+    AnalysisProgressReason.timeout => 'Timed out',
+    AnalysisProgressReason.blocked => 'Blocked by security policy',
+    AnalysisProgressReason.cancelled => 'Operation cancelled',
     AnalysisProgressReason.unsupportedPlatform =>
-      'No disponible en esta plataforma',
-    AnalysisProgressReason.catalogUnavailable => 'Catálogo no disponible',
-    AnalysisProgressReason.catalogStale => 'Catálogo vencido',
-    AnalysisProgressReason.catalogUnknown =>
-      'Disponibilidad del catálogo desconocida',
-    AnalysisProgressReason.notApplicable => 'No aplica',
-    AnalysisProgressReason.notConfigured => 'Comprobación no configurada',
-    AnalysisProgressReason.error => 'La operación falló',
+      'Unavailable on this platform',
+    AnalysisProgressReason.catalogUnavailable => 'Catalog unavailable',
+    AnalysisProgressReason.catalogStale => 'Stale catalog',
+    AnalysisProgressReason.catalogUnknown => 'Unknown catalog availability',
+    AnalysisProgressReason.notApplicable => 'Not applicable',
+    AnalysisProgressReason.notConfigured => 'Check not configured',
+    AnalysisProgressReason.error => 'Operation failed',
     null => '',
   };
 
   Widget _row(AnalysisProgress event, {bool includeLink = false}) {
     final (icon, status) = switch (event.status) {
-      AnalysisStageStatus.active => (Icons.hourglass_top, 'En curso'),
+      AnalysisStageStatus.active => (Icons.hourglass_top, 'In progress'),
       AnalysisStageStatus.completed => (
         Icons.check_circle_outline,
-        'Completada',
+        'Completed',
       ),
-      AnalysisStageStatus.skipped => (Icons.skip_next_outlined, 'Omitida'),
-      AnalysisStageStatus.failed => (Icons.error_outline, 'Fallida'),
-      AnalysisStageStatus.unavailable => (Icons.block, 'No disponible'),
+      AnalysisStageStatus.skipped => (Icons.skip_next_outlined, 'Skipped'),
+      AnalysisStageStatus.failed => (Icons.error_outline, 'Failed'),
+      AnalysisStageStatus.unavailable => (Icons.block, 'Unavailable'),
     };
     final prefix = includeLink && event.linkIndex != null
-        ? 'Enlace único ${event.linkIndex} de ${event.linkTotal}: '
+        ? 'Unique link ${event.linkIndex} of ${event.linkTotal}: '
         : '';
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -87,16 +86,19 @@ class AnalysisProgressView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (running) ...[
-            Semantics(liveRegion: true, child: const Text('Análisis en curso')),
+            Semantics(
+              liveRegion: true,
+              child: const Text('Analysis in progress'),
+            ),
             if (current != null)
-              Text('Enlace único ${current.linkIndex} de ${current.linkTotal}'),
+              Text('Unique link ${current.linkIndex} of ${current.linkTotal}'),
             if (progress.stages.isEmpty)
-              const Text('Esperando observaciones del análisis...'),
+              const Text('Waiting for analysis observations...'),
             for (final event in rows) _row(event),
           ] else
             ExpansionTile(
               tilePadding: EdgeInsets.zero,
-              title: const Text('Etapas del análisis'),
+              title: const Text('Analysis stages'),
               children: [
                 for (final event in progress.stages)
                   _row(event, includeLink: true),
@@ -104,7 +106,7 @@ class AnalysisProgressView extends StatelessWidget {
             ),
           if (unavailable)
             const Text(
-              'La comprobación del acortador no está disponible en esta plataforma.',
+              'Shortener verification is unavailable on this platform.',
             ),
         ],
       ),

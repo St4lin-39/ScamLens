@@ -79,16 +79,22 @@ void main() {
   List<RiskEvidenceId> ids(RiskEvaluationResult result) =>
       result.evidences.map((e) => e.id).toList();
 
-  test('official domain and legitimate subdomain are locally green', () async {
-    for (final host in ['bancolombia.com', 'personas.bancolombia.com']) {
-      final result = await analyze('https://$host/login');
-      expect(result.level, RiskLevel.green);
-      expect(result.completeness, RiskAnalysisCompleteness.complete);
-      expect(result.hasUncertainty, isFalse);
-      expect(ids(result), [RiskEvidenceId.officialDomain]);
-      expect(result.summary, contains('No garantiza seguridad absoluta'));
-    }
-  });
+  test(
+    'official domain and legitimate subdomain are locally green',
+    () async {
+      for (final host in ['bancolombia.com', 'personas.bancolombia.com']) {
+        final result = await analyze('https://$host/login');
+        expect(result.level, RiskLevel.green);
+        expect(result.completeness, RiskAnalysisCompleteness.complete);
+        expect(result.hasUncertainty, isFalse);
+        expect(ids(result), [RiskEvidenceId.officialDomain]);
+        expect(
+          result.summary,
+          contains('Does not guarantee absolute safety'),
+        );
+      }
+    },
+  );
 
   test('unknown domain is yellow even with complete local checks', () async {
     final result = await analyze('https://independent-shop.net');

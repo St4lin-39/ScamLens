@@ -39,11 +39,11 @@ class _ScannerScreenState extends State<ScannerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Escáner QR Seguro')),
+      appBar: AppBar(title: const Text('Secure QR Scanner')),
       body: SafeArea(
         child: BlocConsumer<ScannerBloc, ScannerState>(
           listener: (context, state) {
-            // El BLoC gestiona el estado sin pausar bruscamente el hardware de video
+            // BLoC manages state without abruptly pausing camera hardware
           },
           builder: (context, state) {
             return Column(
@@ -75,7 +75,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
             ),
             const SizedBox(height: 12),
             const Text(
-              'Permiso de cámara requerido',
+              'Camera permission required',
               style: TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 16,
@@ -86,7 +86,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 32),
               child: Text(
-                'ScamLens necesita acceso a la cámara para escanear y analizar códigos QR en tiempo real.',
+                'ScamLens needs camera access to scan and analyze QR codes in real time.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
               ),
@@ -95,7 +95,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
             SizedBox(
               width: 200,
               child: PrimaryButton(
-                label: 'Conceder Permiso',
+                label: 'Grant Permission',
                 onPressed: () {
                   context.read<ScannerBloc>().add(
                     RequestCameraPermissionEvent(),
@@ -122,7 +122,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                   final raw = barcode.rawValue ?? barcode.displayValue;
                   if (raw != null && raw.trim().isNotEmpty) {
                     debugPrint(
-                      '[SCAMLENS UI] Código detectado por cámara: $raw',
+                      '[SCAMLENS UI] QR code detected by camera: $raw',
                     );
                     context.read<ScannerBloc>().add(
                       QRCodeScannedEvent(rawValue: raw),
@@ -151,7 +151,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
               bottom: 24,
               child: IgnorePointer(
                 child: Text(
-                  'APUNTA LA CÁMARA AL QR',
+                  'POINT CAMERA AT QR CODE',
                   style: TextStyle(
                     color: AppColors.accentCyan,
                     fontSize: 12,
@@ -189,7 +189,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                   ),
                   SizedBox(width: 8),
                   Text(
-                    'Escáner activo en tiempo real',
+                    'Real-time scanner active',
                     style: TextStyle(
                       color: AppColors.accentCyan,
                       fontWeight: FontWeight.bold,
@@ -199,7 +199,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Enfoca un código QR físico para interceptar su contenido antes de que el navegador lo abra.',
+                'Focus on a physical QR code to intercept its content before your browser opens it.',
                 style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
               ),
               const SizedBox(height: 16),
@@ -214,7 +214,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                 ),
                 icon: const Icon(Icons.qr_code_2_rounded, size: 18),
                 label: const Text(
-                  'Simular lectura de QR (Prueba acortador)',
+                  'Simulate QR scan (Shortener test)',
                   style: TextStyle(fontSize: 12),
                 ),
                 onPressed: () {
@@ -242,7 +242,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    state.isUrl ? 'ENLACE INTERCEPTADO' : 'TEXTO DETECTADO',
+                    state.isUrl ? 'INTERCEPTED LINK' : 'DETECTED TEXT',
                     style: const TextStyle(
                       color: AppColors.primary,
                       fontWeight: FontWeight.bold,
@@ -272,7 +272,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                           ),
                           SizedBox(width: 4),
                           Text(
-                            'ACORTADOR DETECTADO',
+                            'SHORTENER DETECTED',
                             style: TextStyle(
                               color: AppColors.warningYellow,
                               fontSize: 10,
@@ -298,7 +298,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Contenido detectado en QR:',
+                      'Detected QR content:',
                       style: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 11,
@@ -316,7 +316,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                     if (state.wasShortened) ...[
                       const Divider(height: 18, color: AppColors.border),
                       const Text(
-                        'URL normalizada:',
+                        'Normalized URL:',
                         style: TextStyle(
                           color: AppColors.accentCyan,
                           fontSize: 11,
@@ -338,7 +338,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                         case final destination?) ...[
                       const SizedBox(height: 8),
                       const Text(
-                        'Destino HTTP confirmado:',
+                        'Confirmed HTTP destination:',
                         style: TextStyle(
                           color: AppColors.accentCyan,
                           fontSize: 11,
@@ -366,7 +366,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
               const SizedBox(height: 16),
               AnalysisProgressView(progress: state.progress, running: false),
               PrimaryButton(
-                label: 'Escanear otro QR',
+                label: 'Scan another QR',
                 onPressed: () {
                   context.read<ScannerBloc>().add(ResetScannerEvent());
                 },
@@ -378,7 +378,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
               AnalysisProgressView(progress: state.progress, running: false),
               const SizedBox(height: 12),
               PrimaryButton(
-                label: 'Reintentar',
+                label: 'Retry',
                 onPressed: () {
                   context.read<ScannerBloc>().add(ResetScannerEvent());
                 },

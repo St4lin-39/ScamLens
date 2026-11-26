@@ -106,7 +106,7 @@ class EvaluateUrlRiskUseCase {
     if (!input.isUrl) {
       add(
         RiskEvidenceId.invalidUrl,
-        'El contenido no es una URL evaluable.',
+        'The content is not an evaluable URL.',
         uncertain: true,
       );
       return finish(notApplicable: true);
@@ -114,7 +114,7 @@ class EvaluateUrlRiskUseCase {
     if (expansion == null) {
       add(
         RiskEvidenceId.missingExpansionObservation,
-        'No se dispone de observaciones de expansión.',
+        'No URL expansion observations are available.',
         uncertain: true,
       );
     } else if (!const {
@@ -124,7 +124,7 @@ class EvaluateUrlRiskUseCase {
     }.contains(expansion.status)) {
       add(
         RiskEvidenceId.expansionIncomplete,
-        'La expansión no se completó: ${expansion.status.name}'
+        'URL expansion did not complete: ${expansion.status.name}'
         '${expansion.failureReason == null ? '' : ' (${expansion.failureReason!.name})'}.',
         uncertain: true,
       );
@@ -132,15 +132,15 @@ class EvaluateUrlRiskUseCase {
     if (unresolved) {
       add(
         RiskEvidenceId.unresolvedShortener,
-        'El enlace acortado no tiene un destino confirmado; '
-        'no se atribuye al destino el análisis de marca del acortador.',
+        'The shortened link has no confirmed destination; '
+        'the shortener brand check is not attributed to the destination.',
         uncertain: true,
       );
       // The entry itself can expose HTTP, but is not evaluated as the final host.
       if (raw.toLowerCase().startsWith('http://')) {
         add(
           RiskEvidenceId.explicitHttp,
-          'El enlace de entrada utiliza HTTP.',
+          'The input link uses HTTP.',
           subject: raw,
         );
       }
@@ -159,7 +159,7 @@ class EvaluateUrlRiskUseCase {
         !WebUrlRecognizer.isWebUrl(uri.replace(userInfo: '').toString())) {
       add(
         RiskEvidenceId.invalidUrl,
-        'La estructura de la URL no permite evaluarla.',
+        'The URL structure cannot be evaluated.',
         uncertain: true,
       );
       return finish();
@@ -172,14 +172,14 @@ class EvaluateUrlRiskUseCase {
         uri.scheme != 'http') {
       add(
         RiskEvidenceId.explicitHttp,
-        'El enlace de entrada utiliza HTTP aunque el destino confirmado use HTTPS.',
+        'The input link uses HTTP even though the confirmed destination uses HTTPS.',
         subject: raw,
       );
     }
     if (brand == null) {
       add(
         RiskEvidenceId.brandAnalysisMissing,
-        'El análisis de marca no está disponible.',
+        'Brand analysis is unavailable.',
         uncertain: true,
       );
       return finish();
@@ -190,19 +190,19 @@ class EvaluateUrlRiskUseCase {
       case BrandCatalogStatus.stale:
         add(
           RiskEvidenceId.catalogStale,
-          'Se utilizó un catálogo de marcas vencido.',
+          'A stale brand catalog was used.',
           uncertain: true,
         );
       case BrandCatalogStatus.unavailable:
         add(
           RiskEvidenceId.catalogUnavailable,
-          'No se pudo consultar el catálogo de marcas.',
+          'Could not query the brand catalog.',
           uncertain: true,
         );
       case BrandCatalogStatus.unknown:
         add(
           RiskEvidenceId.catalogUnknown,
-          'No se conoce la disponibilidad del catálogo.',
+          'Brand catalog availability is unknown.',
           uncertain: true,
         );
     }
@@ -212,7 +212,7 @@ class EvaluateUrlRiskUseCase {
     if (brand.status != BrandMatchStatus.notApplicable && !matchesTarget) {
       add(
         RiskEvidenceId.brandTargetMismatch,
-        'El resultado de marca no corresponde al dominio evaluado.',
+        'The brand check result does not match the evaluated domain.',
         uncertain: true,
       );
       return finish();
@@ -225,14 +225,14 @@ class EvaluateUrlRiskUseCase {
                 uri.host.toLowerCase().endsWith('.$officialHost'))) {
           add(
             RiskEvidenceId.brandTargetMismatch,
-            'La coincidencia oficial no acredita este host.',
+            'The official match does not accredit this host.',
             uncertain: true,
           );
         } else {
           add(
             RiskEvidenceId.officialDomain,
-            'El dominio pertenece a ${brand.matchedBrand!.entityName} según el catálogo. '
-            'Esto no garantiza la seguridad del contenido.',
+            'The domain belongs to ${brand.matchedBrand!.entityName} according to the catalog. '
+            'This does not guarantee content safety.',
             severity: EvidenceSeverity.information,
           );
         }
@@ -240,7 +240,7 @@ class EvaluateUrlRiskUseCase {
         add(
           RiskEvidenceId.brandImpersonation,
           brand.heuristicDetail?.technicalEvidence ??
-              'US-07 detectó similitud con un dominio oficial.',
+              'US-07 detected similarity to an official domain.',
           severity:
               brand.editDistance == 1 &&
                   brand.catalogStatus == BrandCatalogStatus.available
@@ -251,7 +251,7 @@ class EvaluateUrlRiskUseCase {
       case BrandMatchStatus.notApplicable:
         add(
           RiskEvidenceId.unknownDomain,
-          'No se ha reconocido este destino como dominio oficial; no significa que sea malicioso.',
+          'This destination is not recognized as an official domain; this does not mean it is malicious.',
         );
     }
     return finish();

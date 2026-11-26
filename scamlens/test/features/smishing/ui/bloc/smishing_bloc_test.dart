@@ -117,7 +117,7 @@ void main() {
     test('validation error for blank text of length ${text.length}', () async {
       final error = await analyze(text) as SmishingError;
       expect(states, [isA<SmishingLoading>(), isA<SmishingError>()]);
-      expect(error.errorMessage, 'Ingresa un SMS con texto para analizar.');
+      expect(error.errorMessage, 'Enter an SMS message to analyze.');
       expect(useCase.calls, [text]);
     });
   }
@@ -134,7 +134,7 @@ void main() {
         expect(states, [isA<SmishingLoading>(), isA<SmishingError>()]);
         expect(
           error.errorMessage,
-          'No se pudo analizar el SMS. Intenta de nuevo.',
+          'Could not analyze the SMS. Please try again.',
         );
       },
     );

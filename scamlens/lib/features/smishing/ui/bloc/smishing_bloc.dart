@@ -94,7 +94,7 @@ class SmishingBloc extends Bloc<SmishingEvent, SmishingState> {
       if (isCurrent()) {
         emit(
           SmishingError(
-            errorMessage: 'Ingresa un SMS con texto para analizar.',
+            errorMessage: 'Enter an SMS message to analyze.',
             progress: pending.snapshot,
           ),
         );
@@ -103,7 +103,7 @@ class SmishingBloc extends Bloc<SmishingEvent, SmishingState> {
       if (isCurrent()) {
         emit(
           SmishingError(
-            errorMessage: 'No se pudo analizar el SMS. Intenta de nuevo.',
+            errorMessage: 'Could not analyze the SMS. Please try again.',
             progress: pending.snapshot,
           ),
         );

@@ -76,7 +76,7 @@ void main() {
         impersonatedBrandId: '22222222-2222-4222-8222-222222222222',
         result: 'HIGH_SUSPICION',
         assignedRiskWeight: 70,
-        technicalEvidence: 'Distancia de edicion 3 frente a bancodebogota.com.',
+        technicalEvidence: 'Edit distance 3 compared to bancodebogota.com.',
       ),
     );
 
@@ -88,13 +88,13 @@ void main() {
       ),
     );
 
-    expect(find.text('POSIBLE SUPLANTACION DE MARCA'), findsOneWidget);
+    expect(find.text('POSSIBLE BRAND IMPERSONATION'), findsOneWidget);
     expect(
       find.textContaining('Banco de Bogota (bancodebogota.com)'),
       findsOneWidget,
     );
     expect(
-      find.textContaining('Distancia de edicion 3'),
+      find.textContaining('Edit distance 3'),
       findsOneWidget,
     );
 
@@ -114,7 +114,9 @@ void main() {
     );
 
     expect(
-      find.text('Dominio oficial verificado: Banco de Bogota (bancodebogota.com)'),
+      find.text(
+        'Verified official domain: Banco de Bogota (bancodebogota.com)',
+      ),
       findsOneWidget,
     );
   });

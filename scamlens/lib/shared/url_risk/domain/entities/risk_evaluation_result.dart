@@ -34,8 +34,7 @@ class RiskEvaluationResult {
           RiskEvidence(
             id: RiskEvidenceId.evaluationUnavailable,
             severity: EvidenceSeverity.caution,
-            justification:
-                'No se dispone de una evaluación de riesgo para este enlace.',
+            justification: 'No risk evaluation is available for this link.',
             subject: subject,
           ),
         ],
@@ -46,10 +45,11 @@ class RiskEvaluationResult {
 
   String get summary => switch (level) {
     RiskLevel.green =>
-      'Dominio oficial reconocido, sin señales locales detectadas. '
-          'No garantiza seguridad absoluta.',
+      'Recognized official domain with no local risk signals detected. '
+          'Does not guarantee absolute safety.',
     RiskLevel.yellow =>
-      'Precaución: existen señales de riesgo o información insuficiente.',
-    RiskLevel.red => 'Posible suplantación: se detectó una señal local fuerte.',
+      'Caution: risk signals or insufficient information detected.',
+    RiskLevel.red =>
+      'Possible impersonation: a strong local risk signal was detected.',
   };
 }

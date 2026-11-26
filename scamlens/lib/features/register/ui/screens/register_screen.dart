@@ -39,17 +39,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final password = _passwordController.text;
 
     if (name.isEmpty || lastName.isEmpty || email.isEmpty || password.isEmpty) {
-      setState(() => _localError = 'Complete all the fields');
+      setState(() => _localError = 'Please fill in all fields');
       return;
     }
     if (password.length < 6) {
       setState(
-        () => _localError = 'The password must contain at least 6 characters.',
+        () => _localError = 'Password must contain at least 6 characters.',
       );
       return;
     }
     if (password != _confirmPasswordController.text) {
-      setState(() => _localError = "The passwords doesn't match");
+      setState(() => _localError = 'Passwords do not match');
       return;
     }
     setState(() => _localError = null);
@@ -81,7 +81,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            '¡Cuenta creada con éxito! Inicia sesión para continuar.',
+                            'Account created successfully! Sign in to continue.',
                           ),
                         ),
                       ],
@@ -124,7 +124,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     const SizedBox(height: 6),
                     const Text(
-                      'Registra tus datos basicos para analizar enlaces SMS y codigos QR en entorno aislado (Sandbox).',
+                      'Register your basic details to analyze SMS links and QR codes in an isolated environment (Sandbox).',
                       style: TextStyle(
                         color: AppColors.textSecondary,
                         height: 1.4,
@@ -135,7 +135,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       controller: _nameController,
                       textCapitalization: TextCapitalization.words,
                       decoration: const InputDecoration(
-                        labelText: 'Nombre',
+                        labelText: 'First name',
                         prefixIcon: Icon(Icons.person_outline),
                       ),
                     ),
@@ -144,7 +144,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       controller: _lastNameController,
                       textCapitalization: TextCapitalization.words,
                       decoration: const InputDecoration(
-                        labelText: 'Apellido',
+                        labelText: 'Last name',
                         prefixIcon: Icon(Icons.badge_outlined),
                       ),
                     ),
@@ -154,7 +154,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       keyboardType: TextInputType.emailAddress,
                       autocorrect: false,
                       decoration: const InputDecoration(
-                        labelText: 'Correo electronico',
+                        labelText: 'Email',
                         prefixIcon: Icon(Icons.mail_outline),
                       ),
                     ),
@@ -163,7 +163,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       controller: _passwordController,
                       obscureText: true,
                       decoration: const InputDecoration(
-                        labelText: 'Contrasena',
+                        labelText: 'Password',
                         prefixIcon: Icon(Icons.lock_outline),
                       ),
                     ),
@@ -172,7 +172,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       controller: _confirmPasswordController,
                       obscureText: true,
                       decoration: const InputDecoration(
-                        labelText: 'Confirmar contrasena',
+                        labelText: 'Confirm password',
                         prefixIcon: Icon(Icons.verified_user_outlined),
                       ),
                     ),
@@ -182,7 +182,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       const SizedBox(height: 16),
                     ],
                     PrimaryButton(
-                      label: 'Crear cuenta segura',
+                      label: 'Create secure account',
                       isLoading: isLoading,
                       onPressed: _submit,
                     ),
@@ -191,7 +191,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: TextButton(
                         onPressed: () => Navigator.pop(context),
                         child: const Text(
-                          '¿Ya tienes cuenta? Inicia sesion',
+                          'Already have an account? Sign in',
                           style: TextStyle(color: AppColors.accentCyan),
                         ),
                       ),

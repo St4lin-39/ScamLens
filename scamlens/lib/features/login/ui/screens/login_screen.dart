@@ -32,7 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final password = _passwordController.text;
 
     if (email.isEmpty || password.isEmpty) {
-      setState(() => _localError = 'Complete todos los campos');
+      setState(() => _localError = 'Please fill in all fields');
       return;
     }
 
@@ -75,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const ScamLensHeader(showProtectedBadge: false),
                     const SizedBox(height: 24),
                     const Text(
-                      'Bienvenido de nuevo',
+                      'Welcome back',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
@@ -84,7 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 6),
                     const Text(
-                      'Inicia sesión para continuar protegiéndote de enlaces y códigos QR sospechosos.',
+                      'Sign in to keep protecting yourself from suspicious links and QR codes.',
                       style: TextStyle(
                         color: AppColors.textSecondary,
                         height: 1.4,
@@ -96,7 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       keyboardType: TextInputType.emailAddress,
                       autocorrect: false,
                       decoration: const InputDecoration(
-                        labelText: 'Correo electrónico',
+                        labelText: 'Email',
                         prefixIcon: Icon(Icons.mail_outline),
                       ),
                     ),
@@ -105,7 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       controller: _passwordController,
                       obscureText: true,
                       decoration: const InputDecoration(
-                        labelText: 'Contraseña',
+                        labelText: 'Password',
                         prefixIcon: Icon(Icons.lock_outline),
                       ),
                     ),
@@ -115,7 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 16),
                     ],
                     PrimaryButton(
-                      label: 'Iniciar sesión',
+                      label: 'Sign in',
                       isLoading: isLoading,
                       onPressed: _submit,
                     ),
@@ -137,7 +137,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 );
                               },
                         child: Text(
-                          '¿No tienes cuenta? Regístrate',
+                          "Don't have an account? Sign up",
                           style: TextStyle(
                             color: isLoading
                                 ? AppColors.textSecondary

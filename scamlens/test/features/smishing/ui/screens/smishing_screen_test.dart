@@ -86,36 +86,36 @@ void main() {
 
   Future<void> analyze(WidgetTester tester, String text) async {
     await tester.enterText(find.byType(TextField), text);
-    await tester.tap(find.text('Analizar enlaces'));
+    await tester.tap(find.text('Analyze links'));
     await tester.pumpAndSettle();
   }
 
   testWidgets('initial state and empty input validation', (tester) async {
     await open(tester);
-    expect(find.text('Enlaces en SMS'), findsOneWidget);
+    expect(find.text('SMS Links'), findsOneWidget);
     expect(find.byType(SelectableText), findsNothing);
-    await tester.tap(find.text('Analizar enlaces'));
+    await tester.tap(find.text('Analyze links'));
     await tester.pump();
     expect(
-      find.text('Ingresa un SMS con texto para analizar.'),
+      find.text('Enter an SMS message to analyze.'),
       findsOneWidget,
     );
   });
   testWidgets('manual message with no URLs and reset', (tester) async {
     await open(tester);
-    await analyze(tester, 'Un mensaje sin enlaces');
-    expect(find.text('No se encontraron enlaces en este SMS.'), findsOneWidget);
-    await tester.ensureVisible(find.text('Analizar otro SMS'));
+    await analyze(tester, 'A message without links');
+    expect(find.text('No links were found in this SMS.'), findsOneWidget);
+    await tester.ensureVisible(find.text('Analyze another SMS'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Analizar otro SMS'));
+    await tester.tap(find.text('Analyze another SMS'));
     await tester.pumpAndSettle();
     expect(
       tester.widget<TextField>(find.byType(TextField)).controller!.text,
       isEmpty,
     );
-    expect(find.text('No se encontraron enlaces en este SMS.'), findsNothing);
+    expect(find.text('No links were found in this SMS.'), findsNothing);
     await analyze(tester, 'https://example.com');
-    expect(find.text('Enlaces detectados: 1'), findsOneWidget);
+    expect(find.text('Detected links: 1'), findsOneWidget);
   });
   testWidgets('multiple URLs keep occurrence order including duplicates', (
     tester,
@@ -129,8 +129,8 @@ void main() {
       tester,
       'https://example.com/a https://bit.ly/demo https://example.com/a',
     );
-    expect(find.text('Enlaces detectados: 3'), findsOneWidget);
-    await tester.ensureVisible(find.text('Enlace 3'));
+    expect(find.text('Detected links: 3'), findsOneWidget);
+    await tester.ensureVisible(find.text('Link 3'));
     await tester.pumpAndSettle();
     final urls = tester
         .widgetList<SelectableText>(find.byType(SelectableText))
@@ -145,39 +145,37 @@ void main() {
       'https://example.com/a',
       'https://example.com/a',
     ]);
-    expect(find.textContaining('No se puede confirmar'), findsNothing);
-    expect(find.text('Destino HTTP confirmado:'), findsOneWidget);
-    expect(find.text('Detalles del procesamiento'), findsNWidgets(3));
-    expect(find.textContaining('Estado:'), findsNothing);
-    await tester.ensureVisible(find.text('Detalles del procesamiento').at(1));
-    await tester.tap(find.text('Detalles del procesamiento').at(1));
+    expect(find.textContaining('Cannot confirm'), findsNothing);
+    expect(find.text('Confirmed HTTP destination:'), findsOneWidget);
+    expect(find.text('Processing details'), findsNWidgets(3));
+    expect(find.textContaining('Status:'), findsNothing);
+    await tester.ensureVisible(find.text('Processing details').at(1));
+    await tester.tap(find.text('Processing details').at(1));
     await tester.pumpAndSettle();
     expect(
-      find.text('Estado: Destino confirmado mediante HTTP'),
+      find.text('Status: Destination confirmed via HTTP'),
       findsOneWidget,
     );
-    expect(find.text('Código HTTP: 200'), findsOneWidget);
-    expect(find.text('Estado: Expansión no solicitada'), findsNothing);
+    expect(find.text('HTTP status: 200'), findsOneWidget);
+    expect(find.text('Status: Expansion not requested'), findsNothing);
     for (final word in [
-      'Seguro',
-      'Malicioso',
-      'Phishing confirmado',
-      'puntuaciÃƒÂ³n',
+      'Safe',
+      'Malicious',
+      'Confirmed phishing',
     ]) {
       expect(find.textContaining(word), findsNothing);
     }
     expect(tester.takeException(), isNull);
   });
   for (final entry in {
-    UrlExpansionStatus.noRedirect: 'No se detectó una redirección HTTP.',
-    UrlExpansionStatus.timeout:
-        'No fue posible completar la comprobación a tiempo.',
-    UrlExpansionStatus.failed: 'Ocurrió un error al comprobar el enlace.',
+    UrlExpansionStatus.noRedirect: 'No HTTP redirect was detected.',
+    UrlExpansionStatus.timeout: 'Could not complete the check in time.',
+    UrlExpansionStatus.failed: 'An error occurred while checking the link.',
     UrlExpansionStatus.blocked:
-        'La comprobación se bloqueó por una restricción de seguridad de red.',
+        'The check was blocked by a network security restriction.',
     UrlExpansionStatus.unsupportedPlatform:
-        'La expansión no está disponible en esta plataforma.',
-    UrlExpansionStatus.cancelled: 'La operación fue cancelada.',
+        'URL expansion is unavailable on this platform.',
+    UrlExpansionStatus.cancelled: 'The operation was cancelled.',
   }.entries) {
     testWidgets(
       'SMS ${entry.key} is brief, with technical details initially closed',
@@ -228,22 +226,22 @@ void main() {
         await open(tester);
         await analyze(tester, 'SMS');
         expect(find.text(entry.value), findsOneWidget);
-        expect(find.text('Acortador detectado.'), findsOneWidget);
-        expect(find.text('Destino HTTP confirmado:'), findsNothing);
+        expect(find.text('Shortener detected.'), findsOneWidget);
+        expect(find.text('Confirmed HTTP destination:'), findsNothing);
         expect(find.text(announced), findsNothing);
-        expect(find.textContaining('Estado:'), findsNothing);
-        expect(find.textContaining('Código HTTP:'), findsNothing);
-        expect(find.textContaining('Motivo:'), findsNothing);
-        await tester.ensureVisible(find.text('Detalles del procesamiento'));
-        await tester.tap(find.text('Detalles del procesamiento'));
+        expect(find.textContaining('Status:'), findsNothing);
+        expect(find.textContaining('HTTP status:'), findsNothing);
+        expect(find.textContaining('Reason:'), findsNothing);
+        await tester.ensureVisible(find.text('Processing details'));
+        await tester.tap(find.text('Processing details'));
         await tester.pumpAndSettle();
-        expect(find.textContaining('Estado:'), findsOneWidget);
+        expect(find.textContaining('Status:'), findsOneWidget);
         expect(
-          find.textContaining('Motivo:'),
+          find.textContaining('Reason:'),
           reason == null ? findsNothing : findsOneWidget,
         );
         expect(
-          find.textContaining('Código HTTP:'),
+          find.textContaining('HTTP status:'),
           unattempted ? findsNothing : findsOneWidget,
         );
         expect(find.text(announced), findsNothing);
@@ -278,18 +276,21 @@ void main() {
         useCase = controlled;
         await open(tester);
         await analyze(tester, 'SMS');
-        expect(find.text('Destino HTTP confirmado:'), findsNothing);
+        expect(find.text('Confirmed HTTP destination:'), findsNothing);
         expect(
-          find.text('Detalles del procesamiento'),
+          find.text('Processing details'),
           hasResult ? findsOneWidget : findsNothing,
         );
         if (hasResult) {
-          await tester.ensureVisible(find.text('Detalles del procesamiento'));
+          await tester.ensureVisible(find.text('Processing details'));
           await tester.pumpAndSettle();
-          await tester.tap(find.text('Detalles del procesamiento'));
+          await tester.tap(find.text('Processing details'));
           await tester.pumpAndSettle();
-          expect(find.text('Estado: Expansión no solicitada'), findsOneWidget);
-          expect(find.textContaining('Redirecciones:'), findsNothing);
+          expect(
+            find.text('Status: Expansion not requested'),
+            findsOneWidget,
+          );
+          expect(find.textContaining('Redirects:'), findsNothing);
         }
       },
     );
@@ -306,24 +307,24 @@ void main() {
               if (mode == 'error') throw PlatformException(code: 'denied');
               return mode == 'empty'
                   ? null
-                  : {'text': mode == 'text' ? 'SMS pegado' : '   '};
+                  : {'text': mode == 'text' ? 'Pasted SMS' : '   '};
             }
             return null;
           });
       await open(tester);
-      await tester.enterText(find.byType(TextField), 'Texto existente');
-      await tester.tap(find.text('Pegar texto'));
+      await tester.enterText(find.byType(TextField), 'Existing text');
+      await tester.tap(find.text('Paste text'));
       await tester.pumpAndSettle();
       expect(format, Clipboard.kTextPlain);
       expect(
         tester.widget<TextField>(find.byType(TextField)).controller!.text,
-        mode == 'text' ? 'SMS pegado' : 'Texto existente',
+        mode == 'text' ? 'Pasted SMS' : 'Existing text',
       );
       if (mode == 'error') {
-        expect(find.text('No se pudo leer el portapapeles.'), findsOneWidget);
+        expect(find.text('Could not read clipboard.'), findsOneWidget);
       }
       if (mode == 'empty' || mode == 'whitespace') {
-        expect(find.text('El portapapeles no contiene texto.'), findsOneWidget);
+        expect(find.text('Clipboard does not contain text.'), findsOneWidget);
       }
     });
   }
@@ -331,8 +332,8 @@ void main() {
     final controlled = ControlledAnalysis();
     useCase = controlled;
     await open(tester);
-    await tester.enterText(find.byType(TextField), 'mensaje');
-    await tester.tap(find.text('Analizar enlaces'));
+    await tester.enterText(find.byType(TextField), 'message');
+    await tester.tap(find.text('Analyze links'));
     await tester.pump();
     expect(
       tester.element(find.byType(SmishingScreen)).read<SmishingBloc>().state,
@@ -342,14 +343,14 @@ void main() {
     controlled.pending.completeError(Exception('private detail'));
     await tester.pumpAndSettle();
     expect(
-      find.text('No se pudo analizar el SMS. Intenta de nuevo.'),
+      find.text('Could not analyze the SMS. Please try again.'),
       findsOneWidget,
     );
     expect(find.textContaining('private detail'), findsNothing);
-    await tester.tap(find.text('Analizar otro SMS'));
+    await tester.tap(find.text('Analyze another SMS'));
     await tester.pumpAndSettle();
     expect(
-      find.text('No se pudo analizar el SMS. Intenta de nuevo.'),
+      find.text('Could not analyze the SMS. Please try again.'),
       findsNothing,
     );
   });
@@ -364,9 +365,9 @@ void main() {
     useCase = controlled;
     await open(tester);
     final url = 'https://example.com/${'a' * 800}';
-    await tester.enterText(find.byType(TextField), '${'mensaje ' * 200}$url');
-    await tester.ensureVisible(find.text('Analizar enlaces'));
-    await tester.tap(find.text('Analizar enlaces'));
+    await tester.enterText(find.byType(TextField), '${'message ' * 200}$url');
+    await tester.ensureVisible(find.text('Analyze links'));
+    await tester.tap(find.text('Analyze links'));
     await tester.pump();
     expect(
       tester.element(find.byType(SmishingScreen)).read<SmishingBloc>().state,
@@ -386,15 +387,17 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    await tester.dragFrom(const Offset(160, 580), const Offset(0, -250));
+    await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
-      find.text('Enlace 1'),
+      find.text('Link 1'),
       200,
       scrollable: find.byType(Scrollable).first,
     );
-    expect(find.text('Enlace 1'), findsOneWidget);
+    expect(find.text('Link 1'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
-  testWidgets('Mensajes opens a route with its own bloc and returns to Home', (
+  testWidgets('Messages opens a route with its own bloc and returns to Home', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -421,15 +424,15 @@ void main() {
         ),
       ),
     );
-    await tester.tap(find.text('Mensajes'));
+    await tester.tap(find.text('Messages'));
     await tester.pumpAndSettle();
     expect(find.byType(SmishingScreen), findsOneWidget);
     await analyze(tester, 'https://example.com');
-    expect(find.text('Enlaces detectados: 1'), findsOneWidget);
+    expect(find.text('Detected links: 1'), findsOneWidget);
     await tester.pageBack();
     await tester.pumpAndSettle();
     expect(find.byType(SmishingScreen), findsNothing);
-    await tester.tap(find.text('Mensajes'));
+    await tester.tap(find.text('Messages'));
     await tester.pumpAndSettle();
     expect(
       tester.widget<TextField>(find.byType(TextField)).controller!.text,

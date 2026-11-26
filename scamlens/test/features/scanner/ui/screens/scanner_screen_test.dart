@@ -107,28 +107,28 @@ void main() {
       final bloc = await open(tester, result);
       expect((bloc.state as ScannerSuccessState).result, same(result));
       expect(find.byType(MobileScanner), findsOneWidget);
-      expect(find.text('Contenido detectado en QR:'), findsOneWidget);
-      expect(find.text('URL normalizada:'), findsOneWidget);
-      expect(find.text('Destino HTTP confirmado:'), findsOneWidget);
+      expect(find.text('Detected QR content:'), findsOneWidget);
+      expect(find.text('Normalized URL:'), findsOneWidget);
+      expect(find.text('Confirmed HTTP destination:'), findsOneWidget);
       expect(find.text('https://destination.example/path'), findsOneWidget);
-      expect(find.text('Destino real desenmascarado:'), findsNothing);
-      expect(find.text('Código HTTP: 200'), findsNothing);
-      await tester.ensureVisible(find.text('Detalles del procesamiento'));
-      await tester.tap(find.text('Detalles del procesamiento'));
+      expect(find.text('Unmasked real destination:'), findsNothing);
+      expect(find.text('HTTP status: 200'), findsNothing);
+      await tester.ensureVisible(find.text('Processing details'));
+      await tester.tap(find.text('Processing details'));
       await tester.pumpAndSettle();
       expect(
-        find.text('Estado: Destino confirmado mediante HTTP'),
+        find.text('Status: Destination confirmed via HTTP'),
         findsOneWidget,
       );
-      expect(find.text('Redirecciones: 2'), findsOneWidget);
-      expect(find.text('Código HTTP: 200'), findsOneWidget);
-      await tester.ensureVisible(find.text('ESCANEAR OTRO QR'));
-      await tester.tap(find.text('ESCANEAR OTRO QR'));
+      expect(find.text('Redirects: 2'), findsOneWidget);
+      expect(find.text('HTTP status: 200'), findsOneWidget);
+      await tester.ensureVisible(find.text('SCAN ANOTHER QR'));
+      await tester.tap(find.text('SCAN ANOTHER QR'));
       await tester.pumpAndSettle();
       expect(bloc.state, isA<ScannerActiveState>());
       bloc.add(QRCodeScannedEvent(rawValue: result.contentRaw));
       await tester.pumpAndSettle();
-      expect(find.text('Código HTTP: 200'), findsNothing);
+      expect(find.text('HTTP status: 200'), findsNothing);
       expect(tester.takeException(), isNull);
     },
   );
@@ -168,14 +168,14 @@ void main() {
           expansion: expansion,
         ),
       );
-      expect(find.text('ACORTADOR DETECTADO'), findsOneWidget);
-      expect(find.text('Destino HTTP confirmado:'), findsNothing);
+      expect(find.text('SHORTENER DETECTED'), findsOneWidget);
+      expect(find.text('Confirmed HTTP destination:'), findsNothing);
       expect(find.text(announced), findsNothing);
-      expect(find.textContaining('Estado:'), findsNothing);
-      await tester.ensureVisible(find.text('Detalles del procesamiento'));
-      await tester.tap(find.text('Detalles del procesamiento'));
+      expect(find.textContaining('Status:'), findsNothing);
+      await tester.ensureVisible(find.text('Processing details'));
+      await tester.tap(find.text('Processing details'));
       await tester.pumpAndSettle();
-      expect(find.textContaining('Estado:'), findsOneWidget);
+      expect(find.textContaining('Status:'), findsOneWidget);
       expect(find.text(announced), findsNothing);
       expect(tester.takeException(), isNull);
     });
@@ -193,10 +193,10 @@ void main() {
         wasShortened: true,
       ),
     );
-    expect(find.text('ACORTADOR DETECTADO'), findsOneWidget);
-    expect(find.text('URL normalizada:'), findsOneWidget);
-    expect(find.text('Destino HTTP confirmado:'), findsNothing);
-    expect(find.text('Detalles del procesamiento'), findsNothing);
+    expect(find.text('SHORTENER DETECTED'), findsOneWidget);
+    expect(find.text('Normalized URL:'), findsOneWidget);
+    expect(find.text('Confirmed HTTP destination:'), findsNothing);
+    expect(find.text('Processing details'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
@@ -206,17 +206,17 @@ void main() {
     await open(
       tester,
       UrlProcessingResult(
-        contentRaw: 'Un texto',
-        normalizedUrl: 'Un texto',
+        contentRaw: 'Plain text',
+        normalizedUrl: 'Plain text',
         isUrl: false,
         wasShortened: false,
         expansion: UrlExpansionResult(status: UrlExpansionStatus.notAttempted),
       ),
     );
-    expect(find.text('TEXTO DETECTADO'), findsOneWidget);
-    expect(find.text('Un texto'), findsOneWidget);
-    expect(find.text('ESCANEAR OTRO QR'), findsOneWidget);
-    expect(find.text('Detalles del procesamiento'), findsNothing);
+    expect(find.text('DETECTED TEXT'), findsOneWidget);
+    expect(find.text('Plain text'), findsOneWidget);
+    expect(find.text('SCAN ANOTHER QR'), findsOneWidget);
+    expect(find.text('Processing details'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

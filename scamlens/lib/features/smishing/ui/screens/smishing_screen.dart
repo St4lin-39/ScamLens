@@ -34,7 +34,7 @@ class _SmishingScreenState extends State<SmishingScreen> {
       if (!mounted || revision != _editRevision) return;
       final text = data?.text;
       if (text == null || text.trim().isEmpty) {
-        setState(() => _inputError = 'El portapapeles no contiene texto.');
+        setState(() => _inputError = 'Clipboard does not contain text.');
       } else {
         _controller.text = text;
         _editRevision++;
@@ -43,7 +43,7 @@ class _SmishingScreenState extends State<SmishingScreen> {
       }
     } catch (_) {
       if (mounted && revision == _editRevision) {
-        setState(() => _inputError = 'No se pudo leer el portapapeles.');
+        setState(() => _inputError = 'Could not read clipboard.');
       }
     } finally {
       if (mounted) setState(() => _pasting = false);
@@ -60,7 +60,7 @@ class _SmishingScreenState extends State<SmishingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Enlaces en SMS')),
+      appBar: AppBar(title: const Text('SMS Links')),
       body: SafeArea(
         child: BlocBuilder<SmishingBloc, SmishingState>(
           builder: (context, state) {
@@ -75,8 +75,8 @@ class _SmishingScreenState extends State<SmishingScreen> {
                 ),
                 const SizedBox(height: 16),
                 const Text(
-                  'Extrae y evalúa los enlaces de un SMS mediante señales locales de riesgo. '
-                  'No se evalúa el contenido del mensaje ni se garantiza la seguridad de los enlaces.',
+                  'Extracts and evaluates links from an SMS using local risk signals. '
+                  'Message content is not evaluated and link safety is not guaranteed.',
                 ),
                 const SizedBox(height: 20),
                 TextField(
@@ -86,9 +86,9 @@ class _SmishingScreenState extends State<SmishingScreen> {
                   maxLines: 8,
                   keyboardType: TextInputType.multiline,
                   decoration: InputDecoration(
-                    labelText: 'Mensaje SMS',
+                    labelText: 'SMS message',
                     alignLabelWithHint: true,
-                    hintText: 'Escribe o pega el mensaje aquí',
+                    hintText: 'Type or paste the message here',
                     errorText: _inputError,
                     errorMaxLines: 3,
                   ),
@@ -102,7 +102,7 @@ class _SmishingScreenState extends State<SmishingScreen> {
                 OutlinedButton.icon(
                   onPressed: loading || _pasting ? null : _paste,
                   icon: const Icon(Icons.content_paste),
-                  label: const Text('Pegar texto'),
+                  label: const Text('Paste text'),
                 ),
                 const SizedBox(height: 8),
                 FilledButton(
@@ -112,7 +112,7 @@ class _SmishingScreenState extends State<SmishingScreen> {
                           if (_controller.text.trim().isEmpty) {
                             setState(
                               () => _inputError =
-                                  'Ingresa un SMS con texto para analizar.',
+                                  'Enter an SMS message to analyze.',
                             );
                             return;
                           }
@@ -121,7 +121,7 @@ class _SmishingScreenState extends State<SmishingScreen> {
                             AnalyzeSmsEvent(text: _controller.text),
                           );
                         },
-                  child: const Text('Analizar enlaces'),
+                  child: const Text('Analyze links'),
                 ),
                 if (state is SmishingLoading) ...[
                   const SizedBox(height: 24),
@@ -142,8 +142,8 @@ class _SmishingScreenState extends State<SmishingScreen> {
                   const SizedBox(height: 20),
                   Text(
                     state.result.urls.isEmpty
-                        ? 'No se encontraron enlaces en este SMS.'
-                        : 'Enlaces detectados: ${state.result.urls.length}',
+                        ? 'No links were found in this SMS.'
+                        : 'Detected links: ${state.result.urls.length}',
                   ),
                   for (final (index, url) in state.result.urls.indexed)
                     Card(
@@ -154,23 +154,23 @@ class _SmishingScreenState extends State<SmishingScreen> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             Text(
-                              'Enlace ${index + 1}',
+                              'Link ${index + 1}',
                               style: const TextStyle(color: AppColors.primary),
                             ),
                             const SizedBox(height: 8),
-                            const Text('Detectado:'),
+                            const Text('Detected:'),
                             SelectableText(url.contentRaw),
                             const SizedBox(height: 8),
-                            const Text('URL normalizada:'),
+                            const Text('Normalized URL:'),
                             SelectableText(url.normalizedUrl),
                             if (url.wasShortened) ...[
                               const SizedBox(height: 8),
-                              const Text('Acortador detectado.'),
+                              const Text('Shortener detected.'),
                             ],
                             if (url.expansion?.verifiedDestination
                                 case final destination?) ...[
                               const SizedBox(height: 8),
-                              const Text('Destino HTTP confirmado:'),
+                              const Text('Confirmed HTTP destination:'),
                               SelectableText(destination),
                             ],
                             RiskTrafficLight(
@@ -191,7 +191,7 @@ class _SmishingScreenState extends State<SmishingScreen> {
                 if (state is! SmishingInitial)
                   TextButton(
                     onPressed: _reset,
-                    child: const Text('Analizar otro SMS'),
+                    child: const Text('Analyze another SMS'),
                   ),
               ],
             );

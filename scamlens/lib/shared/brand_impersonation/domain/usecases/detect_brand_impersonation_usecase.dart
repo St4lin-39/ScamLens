@@ -56,14 +56,14 @@ class DetectBrandImpersonationUseCase {
             result: 'VERIFIED_OFFICIAL',
             assignedRiskWeight: 0,
             technicalEvidence:
-                'El dominio raiz ${evaluated.rootDomain} coincide con el '
-                'dominio oficial verificado de ${brand.entityName}.',
+                'The root domain ${evaluated.rootDomain} matches the '
+                'verified official domain of ${brand.entityName}.',
           ),
         );
       }
     }
 
-    // 2. Evaluar typosquatting (distancia 1..3) o mismo nombre en TLD no oficial
+    // 2. Evaluate typosquatting (distance 1..3) or exact brand name on non-official TLD
     OfficialBrand? closestBrand;
     int? bestDistance;
 
@@ -118,10 +118,9 @@ class DetectBrandImpersonationUseCase {
           result: 'HIGH_SUSPICION',
           assignedRiskWeight: weight,
           technicalEvidence:
-              'El dominio raiz "${evaluated.rootDomain}" presenta una '
-              'distancia de edicion de $bestDistance frente a la marca '
-              'oficial ${closestBrand.entityName} '
-              '(${closestBrand.officialDomain}).',
+              'The root domain "${evaluated.rootDomain}" has an edit '
+              'distance of $bestDistance compared to the official brand '
+              '${closestBrand.entityName} (${closestBrand.officialDomain}).',
         ),
       );
     }

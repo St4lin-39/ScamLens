@@ -187,7 +187,7 @@ void main() {
     () async {
       final result = await scan(' \n ') as ScannerErrorState;
       expect(states, [isA<ScannerProcessingState>(), isA<ScannerErrorState>()]);
-      expect(result.errorMessage, 'Código QR vacío o ilegible');
+      expect(result.errorMessage, 'Empty or unreadable QR code');
       expect(service.calls, isEmpty);
     },
   );

@@ -50,11 +50,11 @@ class _HomeScreenView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Resumen del Perfil'),
+        title: const Text('Profile Summary'),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: AppColors.error),
-            tooltip: 'Cerrar sesión',
+            tooltip: 'Sign out',
             onPressed: () {
               context.read<ProfileBloc>().add(SignOutRequestedEvent());
             },
@@ -89,7 +89,7 @@ class _HomeScreenView extends StatelessWidget {
                       ErrorMessage(message: state.errorMessage),
                       const SizedBox(height: 16),
                       PrimaryButton(
-                        label: 'Reintentar',
+                        label: 'Retry',
                         onPressed: () {
                           context.read<ProfileBloc>().add(LoadProfileEvent());
                         },
@@ -165,38 +165,38 @@ class _HomeScreenView extends StatelessWidget {
                         const SizedBox(height: 28),
                         ProfileField(
                           icon: Icons.person_outline,
-                          label: 'Nombre',
+                          label: 'First name',
                           value: profile.name,
                         ),
                         const SizedBox(height: 12),
                         ProfileField(
                           icon: Icons.badge_outlined,
-                          label: 'Apellido',
+                          label: 'Last name',
                           value: profile.lastName,
                         ),
                         const SizedBox(height: 12),
                         ProfileField(
                           icon: Icons.mail_outline,
-                          label: 'Correo electrónico',
+                          label: 'Email',
                           value: profile.email,
                         ),
                         const SizedBox(height: 12),
                         ProfileField(
                           icon: Icons.verified_user_outlined,
-                          label: 'Estado del escudo',
+                          label: 'Shield status',
                           value: profile.active
-                              ? 'Activo • Protegido'
-                              : 'Inactivo',
+                              ? 'Active • Protected'
+                              : 'Inactive',
                         ),
                         const SizedBox(height: 12),
                         ProfileField(
                           icon: Icons.calendar_today_outlined,
-                          label: 'Miembro desde',
+                          label: 'Member since',
                           value: formattedDate,
                         ),
                         const SizedBox(height: 28),
                         PrimaryButton(
-                          label: 'Cerrar sesión',
+                          label: 'Sign out',
                           onPressed: () {
                             context.read<ProfileBloc>().add(
                               SignOutRequestedEvent(),
@@ -252,15 +252,15 @@ class _HomeScreenView extends StatelessWidget {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.qr_code_scanner_rounded),
-            label: 'Escáner',
+            label: 'Scanner',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.chat_bubble_outline_rounded),
-            label: 'Mensajes',
+            label: 'Messages',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.shield_outlined),
-            label: 'Comunidad / Perfil',
+            label: 'Community / Profile',
           ),
         ],
       ),

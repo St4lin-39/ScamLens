@@ -31,7 +31,7 @@ class BrandImpersonationBanner extends StatelessWidget {
                 SizedBox(width: 6),
                 Expanded(
                   child: Text(
-                    'POSIBLE SUPLANTACION DE MARCA',
+                    'POSSIBLE BRAND IMPERSONATION',
                     style: TextStyle(
                       color: AppColors.error,
                       fontSize: 12,
@@ -43,7 +43,7 @@ class BrandImpersonationBanner extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              'Se parece a ${brand.entityName} (${brand.officialDomain})',
+              'Resembles ${brand.entityName} (${brand.officialDomain})',
               style: const TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 13,
@@ -86,7 +86,7 @@ class BrandImpersonationBanner extends StatelessWidget {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                'Dominio oficial verificado: ${brand.entityName} (${brand.officialDomain})',
+                'Verified official domain: ${brand.entityName} (${brand.officialDomain})',
                 style: const TextStyle(
                   color: AppColors.safeGreen,
                   fontSize: 12,

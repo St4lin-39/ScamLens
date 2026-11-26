@@ -11,7 +11,7 @@ class GetProfileUseCase {
   Future<Profile> call([String? id]) async {
     final userId = id ?? authRepository.getCurrentUserId();
     if (userId == null) {
-      throw Exception('No hay usuario autenticado');
+      throw Exception('No authenticated user');
     }
     return repository.getProfile(userId);
   }
