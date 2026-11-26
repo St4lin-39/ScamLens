@@ -7,6 +7,11 @@ import 'package:scamlens/shared/brand_impersonation/data/datasources/supabase_of
 import 'package:scamlens/shared/brand_impersonation/data/repositories/official_brand_repository_impl.dart';
 import 'package:scamlens/shared/brand_impersonation/domain/repositories/official_brand_repository.dart';
 import 'package:scamlens/shared/brand_impersonation/domain/usecases/detect_brand_impersonation_usecase.dart';
+import 'package:scamlens/shared/ioc_verification/data/datasources/google_safe_browsing_datasource.dart';
+import 'package:scamlens/shared/ioc_verification/data/datasources/supabase_ioc_datasource.dart';
+import 'package:scamlens/shared/ioc_verification/data/repositories/composite_ioc_repository.dart';
+import 'package:scamlens/shared/ioc_verification/domain/repositories/ioc_repository.dart';
+import 'package:scamlens/shared/ioc_verification/domain/usecases/verify_ioc_usecase.dart';
 import 'package:scamlens/shared/url_processing/data/transport/expansion_http_session.dart';
 import 'package:scamlens/shared/url_processing/data/transport/expansion_http_session_factory.dart';
 import 'package:scamlens/shared/url_processing/domain/services/url_normalizer.dart';
@@ -29,6 +34,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 const supabaseUrl = 'https://whktztxzdruccvukxcuv.supabase.co';
 const supabasePublishableKey = 'sb_publishable_rF5IjGKLYSvOH080Ybenbg_UiuKa5i3';
+const safeBrowsingApiKey = String.fromEnvironment('SAFE_BROWSING_API_KEY');
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -107,12 +113,28 @@ class MyApp extends StatelessWidget {
             repository: context.read<OfficialBrandRepository>(),
           ),
         ),
+        RepositoryProvider<IocRepository>(
+          create: (_) => CompositeIocRepository(
+            supabaseDatasource: SupabaseIocDatasource(
+              client: Supabase.instance.client,
+            ),
+            safeBrowsingDatasource: GoogleSafeBrowsingDatasource(
+              apiKey: safeBrowsingApiKey,
+            ),
+          ),
+        ),
+        RepositoryProvider<VerifyIocUseCase>(
+          create: (context) => VerifyIocUseCase(
+            repository: context.read<IocRepository>(),
+          ),
+        ),
         RepositoryProvider<ProcessUrlUseCase>(
           create: (context) => ProcessUrlUseCase(
             normalizer: context.read<UrlNormalizer>(),
             expander: context.read<UrlExpander>(),
             detectBrandImpersonationUseCase: context
                 .read<DetectBrandImpersonationUseCase>(),
+            verifyIocUseCase: context.read<VerifyIocUseCase>(),
           ),
         ),
         RepositoryProvider<SmsUrlExtractor>(create: (_) => SmsUrlExtractor()),

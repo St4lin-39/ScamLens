@@ -6,6 +6,7 @@ import 'package:scamlens/features/smishing/ui/bloc/smishing_bloc.dart';
 import 'package:scamlens/theme/app_theme.dart';
 import 'package:scamlens/components/risk_traffic_light.dart';
 import 'package:scamlens/components/analysis_progress_view.dart';
+import 'package:scamlens/components/ioc_threat_banner.dart';
 
 class SmishingScreen extends StatefulWidget {
   const SmishingScreen({super.key});
@@ -173,6 +174,7 @@ class _SmishingScreenState extends State<SmishingScreen> {
                               const Text('Confirmed HTTP destination:'),
                               SelectableText(destination),
                             ],
+                            IocThreatBanner(iocCheck: url.iocCheck),
                             RiskTrafficLight(
                               evaluation: state.result.riskEvaluations[index],
                             ),

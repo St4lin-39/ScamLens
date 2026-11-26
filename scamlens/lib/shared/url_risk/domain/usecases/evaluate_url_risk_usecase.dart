@@ -2,6 +2,7 @@ import '../../../brand_impersonation/domain/entities/brand_impersonation_result.
 import '../../../brand_impersonation/domain/entities/official_brand.dart';
 import '../../../brand_impersonation/domain/entities/official_brand_catalog.dart';
 import '../../../brand_impersonation/domain/services/registrable_domain_extractor.dart';
+import '../../../ioc_verification/domain/entities/ioc_check_result.dart';
 import '../../../url_processing/domain/entities/url_expansion_result.dart';
 import '../../../url_processing/domain/entities/url_processing_result.dart';
 import '../../../url_processing/domain/services/web_url_recognizer.dart';
@@ -111,6 +112,38 @@ class EvaluateUrlRiskUseCase {
       );
       return finish(notApplicable: true);
     }
+
+    final ioc = input.iocCheck;
+    if (ioc != null) {
+      if (ioc.isConfirmedThreat) {
+        add(
+          RiskEvidenceId.confirmedIoc,
+          ioc.heuristicDetail?.technicalEvidence ??
+              'Matched a confirmed malicious indicator of compromise (IOC).',
+          severity: EvidenceSeverity.high,
+          subject: ioc.matchedCandidate ?? target ?? raw,
+        );
+      } else {
+        switch (ioc.sourceAvailability) {
+          case IocSourceAvailability.available:
+          case IocSourceAvailability.notConfigured:
+            break;
+          case IocSourceAvailability.partial:
+            add(
+              RiskEvidenceId.iocCheckPartial,
+              'Threat intelligence verification was partial; one source could not be reached.',
+              uncertain: true,
+            );
+          case IocSourceAvailability.unavailable:
+            add(
+              RiskEvidenceId.iocCheckUnavailable,
+              'Could not query threat intelligence sources (IOCs).',
+              uncertain: true,
+            );
+        }
+      }
+    }
+
     if (expansion == null) {
       add(
         RiskEvidenceId.missingExpansionObservation,

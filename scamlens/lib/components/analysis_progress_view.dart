@@ -17,6 +17,7 @@ class AnalysisProgressView extends StatelessWidget {
     AnalysisStage.normalizeUrl => 'Recognizing and normalizing URL',
     AnalysisStage.expandShortener => 'Checking shortener destination',
     AnalysisStage.brandCheck => 'Evaluating possible brand impersonation',
+    AnalysisStage.iocCheck => 'Checking confirmed threat indicators (IOCs)',
     AnalysisStage.evaluateRisk =>
       'Applying local heuristics and calculating risk',
     AnalysisStage.prepareResult => 'Preparing result',

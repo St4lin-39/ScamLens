@@ -26,6 +26,9 @@ class RiskEvaluationResult {
 
   bool get hasUncertainty => uncertaintyReasons.isNotEmpty;
 
+  bool get hasConfirmedIoc =>
+      evidences.any((e) => e.id == RiskEvidenceId.confirmedIoc);
+
   /// Conservative compatibility for producers that have not run the evaluator.
   factory RiskEvaluationResult.notEvaluated(String subject) =>
       RiskEvaluationResult(
@@ -50,6 +53,8 @@ class RiskEvaluationResult {
     RiskLevel.yellow =>
       'Caution: risk signals or insufficient information detected.',
     RiskLevel.red =>
-      'Possible impersonation: a strong local risk signal was detected.',
+      hasConfirmedIoc
+          ? 'Confirmed threat: this link matches a known indicator of compromise (IOC).'
+          : 'Possible impersonation: a strong local risk signal was detected.',
   };
 }

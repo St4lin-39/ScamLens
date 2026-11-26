@@ -24,6 +24,9 @@ enum RiskEvidenceId {
   catalogUnknown,
   brandAnalysisMissing,
   brandTargetMismatch,
+  confirmedIoc,
+  iocCheckPartial,
+  iocCheckUnavailable,
 }
 
 class RiskEvidence {

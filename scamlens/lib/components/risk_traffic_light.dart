@@ -29,7 +29,9 @@ class RiskTrafficLight extends StatelessWidget {
       RiskLevel.red => (
         AppColors.error,
         Icons.gpp_bad_outlined,
-        'Red · Possible impersonation',
+        evaluation.hasConfirmedIoc
+            ? 'Red · Confirmed malicious threat'
+            : 'Red · Possible impersonation',
       ),
     };
     final coverage = switch (evaluation.completeness) {
@@ -75,8 +77,10 @@ class RiskTrafficLight extends StatelessWidget {
             ],
             if (evaluation.level == RiskLevel.red) ...[
               const SizedBox(height: 6),
-              const Text(
-                'Direct opening blocked due to possible impersonation.',
+              Text(
+                evaluation.hasConfirmedIoc
+                    ? 'Direct opening blocked: matched a confirmed indicator of compromise (IOC).'
+                    : 'Direct opening blocked due to possible impersonation.',
               ),
             ],
             if (onOpenUrl != null)

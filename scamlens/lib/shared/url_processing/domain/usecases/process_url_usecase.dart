@@ -1,5 +1,7 @@
 import '../../../brand_impersonation/domain/entities/brand_impersonation_result.dart';
 import '../../../brand_impersonation/domain/usecases/detect_brand_impersonation_usecase.dart';
+import '../../../ioc_verification/domain/entities/ioc_check_result.dart';
+import '../../../ioc_verification/domain/usecases/verify_ioc_usecase.dart';
 import '../entities/url_processing_result.dart';
 import '../entities/url_expansion_result.dart';
 import '../services/url_expander.dart';
@@ -12,11 +14,13 @@ class ProcessUrlUseCase {
   final UrlNormalizer normalizer;
   final UrlExpander expander;
   final DetectBrandImpersonationUseCase? detectBrandImpersonationUseCase;
+  final VerifyIocUseCase? verifyIocUseCase;
 
   ProcessUrlUseCase({
     required this.normalizer,
     required this.expander,
     this.detectBrandImpersonationUseCase,
+    this.verifyIocUseCase,
   });
 
   /// Rejects empty content; the caller supplies any presentation-specific message.
@@ -176,6 +180,62 @@ class ProcessUrlUseCase {
       );
     }
 
+    IocCheckResult? iocCheck;
+    if (verifyIocUseCase != null) {
+      if (!isUrl) {
+        report(
+          AnalysisStage.iocCheck,
+          AnalysisStageStatus.skipped,
+          AnalysisProgressReason.notApplicable,
+        );
+      } else {
+        report(AnalysisStage.iocCheck, AnalysisStageStatus.active);
+        try {
+          final protectedDomains =
+              brandImpersonation?.evaluatedBrands
+                  .map((b) => b.officialDomain)
+                  .toList(growable: false) ??
+              const <String>[];
+          iocCheck = await verifyIocUseCase!(
+            normalizedUrl: normalizedUrl,
+            verifiedDestination: expansion.verifiedDestination,
+            protectedDomains: protectedDomains,
+          );
+          final (status, reason) = iocCheck.status == IocCheckStatus.notApplicable
+              ? (
+                  AnalysisStageStatus.skipped,
+                  AnalysisProgressReason.notApplicable,
+                )
+              : switch (iocCheck.sourceAvailability) {
+                  IocSourceAvailability.available => (
+                    AnalysisStageStatus.completed,
+                    null,
+                  ),
+                  IocSourceAvailability.partial => (
+                    AnalysisStageStatus.completed,
+                    null,
+                  ),
+                  IocSourceAvailability.unavailable => (
+                    AnalysisStageStatus.unavailable,
+                    AnalysisProgressReason.catalogUnavailable,
+                  ),
+                  IocSourceAvailability.notConfigured => (
+                    AnalysisStageStatus.skipped,
+                    AnalysisProgressReason.notConfigured,
+                  ),
+                };
+          report(AnalysisStage.iocCheck, status, reason);
+        } catch (_) {
+          iocCheck = null;
+          report(
+            AnalysisStage.iocCheck,
+            AnalysisStageStatus.failed,
+            AnalysisProgressReason.error,
+          );
+        }
+      }
+    }
+
     return UrlProcessingResult(
       contentRaw: content,
       normalizedUrl: normalizedUrl,
@@ -183,6 +243,7 @@ class ProcessUrlUseCase {
       wasShortened: wasShortened,
       expansion: expansion,
       brandImpersonation: brandImpersonation,
+      iocCheck: iocCheck,
     );
   }
 }

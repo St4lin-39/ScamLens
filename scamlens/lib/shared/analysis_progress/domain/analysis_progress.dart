@@ -3,6 +3,7 @@ enum AnalysisStage {
   normalizeUrl,
   expandShortener,
   brandCheck,
+  iocCheck,
   evaluateRisk,
   prepareResult,
 }

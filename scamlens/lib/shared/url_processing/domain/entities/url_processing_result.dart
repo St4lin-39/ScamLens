@@ -1,4 +1,5 @@
 import '../../../brand_impersonation/domain/entities/brand_impersonation_result.dart';
+import '../../../ioc_verification/domain/entities/ioc_check_result.dart';
 import 'url_expansion_result.dart';
 
 class UrlProcessingResult {
@@ -17,6 +18,9 @@ class UrlProcessingResult {
   /// Heuristic brand impersonation analysis (Levenshtein against official_brand).
   final BrandImpersonationResult? brandImpersonation;
 
+  /// Verification against confirmed Indicators of Compromise (Supabase + Safe Browsing).
+  final IocCheckResult? iocCheck;
+
   const UrlProcessingResult({
     required this.contentRaw,
     required this.normalizedUrl,
@@ -24,5 +28,6 @@ class UrlProcessingResult {
     required this.wasShortened,
     this.expansion,
     this.brandImpersonation,
+    this.iocCheck,
   });
 }
